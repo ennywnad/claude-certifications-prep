@@ -22,11 +22,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Note: enablement: true does not work here — GITHUB_TOKEN gets
+      # "Resource not accessible by integration" from the create-Pages-site
+      # endpoint. Pages must be switched on once in Settings -> Pages.
       - uses: actions/configure-pages@v5
-        with:
-          # Turns Pages on for the repo the first time this runs, so no manual
-          # Settings -> Pages step is needed.
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
