@@ -21,6 +21,5 @@ More certifications will be added here as they're prepped for.
 
 `index.html` is the site landing page. Every push to `main` is deployed by
 [`.github/workflows/pages.yml`](.github/workflows/pages.yml), which publishes the
-repository root as-is.
-
-One-time setup: in **Settings → Pages**, set **Source** to **GitHub Actions**.
+repository root as-is. The workflow enables Pages itself on first run — no manual
+**Settings → Pages** step needed.
