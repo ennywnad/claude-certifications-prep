@@ -144,10 +144,23 @@
   .vcard .vlead b{color:var(--ink)}
   .vcard .vlead code{background:#f2ede6;padding:1px 5px;border-radius:4px;font-size:12.5px}
   .vcard svg{width:100%;height:auto;display:block;border-radius:10px}
+
+  /* Cross-page nav */
+  .crumbs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+  .crumbs a{display:inline-block;text-decoration:none;font-size:13px;font-weight:600;
+    border:1px solid var(--line);background:var(--panel);border-radius:999px;
+    padding:6px 13px;color:var(--muted);transition:.15s}
+  .crumbs a:hover{border-color:var(--accent);color:var(--accent)}
 </style>
 </head>
 <body>
 <div class="wrap">
+
+  <nav class="crumbs">
+    <a href="../index.html">← All certifications</a>
+    <a href="practice-quiz.html">Practice quiz</a>
+    <a href="source/exam-guide.pdf">Official exam guide (PDF)</a>
+  </nav>
 
   <header class="hero">
     <div class="kicker">Claude Certification Program · Visual Study Guide</div>
