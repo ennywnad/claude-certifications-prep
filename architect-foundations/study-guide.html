@@ -76,6 +76,10 @@
   .badge.d4{background:var(--d4)} .badge.d5{background:var(--d5)}
   .badge.focus{background:var(--focus-soft);color:var(--focus);border:1px solid #e8c6bb}
   .chip[data-d="focus"].on{background:var(--focus);color:#fff !important;border-color:transparent}
+  .chip[data-d="new"]{border-style:dashed}
+  .chip[data-d="new"].on{background:var(--muted);color:#fff !important;border-style:solid}
+  .badge.new{background:transparent;color:var(--muted);border:1px dashed #cfc6b8;font-weight:600}
+  h3 .badge.new{font-size:10.5px;margin-left:6px;vertical-align:middle;white-space:nowrap}
   .badge.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
   .chev{flex:0 0 auto;color:var(--muted);transition:.2s;font-size:14px;margin-top:3px}
   .card.open .chev{transform:rotate(90deg)}
@@ -177,7 +181,7 @@
   </header>
 
   <div class="note">
-    <b>★ Focus areas.</b> Everything tagged <b>★</b> — questions, principles, traps, playbooks, and reference tables — was added after the 8/12/2026 attempt (702/720) and targets only the objectives that scored below 80%. Use the <b>★ Focus areas</b> chip on the Worked Questions tab to drill just those. Nothing from the original guide was removed.<br><br><b>How to use this guide.</b> The single answer is rarely the hard part — the incorrect options are written to look right to someone with partial knowledge. So for each question, read <i>why</i> the three distractors fail. They almost always fail for the <b>same handful of reasons</b>, collected in the <b>Principles</b> and <b>Traps</b> tabs. Master those and you can reason to the answer even on a question you've never seen.
+    <b>★ Focus areas.</b> Everything tagged <b>★</b> — questions, principles, traps, playbooks, and reference tables — was added after the 8/12/2026 attempt (702/720) and targets only the objectives that scored below 80%. Use the <b>★ Focus areas</b> chip on the Worked Questions tab to drill just those. Nothing from the original guide was removed.<br><br><b>New · 9/12.</b> A smaller follow-up from reader feedback — fork vs resume, built-in tool selection, MCP loading, the retry boundary, and plan mode vs direct vs interview. Those items carry a <span class="badge new">New · 9/12</span> tag, and the matching chip drills just those 13 questions.<br><br><b>How to use this guide.</b> The single answer is rarely the hard part — the incorrect options are written to look right to someone with partial knowledge. So for each question, read <i>why</i> the three distractors fail. They almost always fail for the <b>same handful of reasons</b>, collected in the <b>Principles</b> and <b>Traps</b> tabs. Master those and you can reason to the answer even on a question you've never seen.
   </div>
 
   <nav class="tabs" id="tabs">
@@ -201,6 +205,7 @@
       <div class="chip" data-d="4" style="border-color:var(--d4);color:var(--d4)">D4 · Prompt &amp; Output</div>
       <div class="chip" data-d="5" style="border-color:var(--d5);color:var(--d5)">D5 · Context &amp; Reliability</div>
       <div class="chip" data-d="focus" style="border-color:var(--focus);color:var(--focus)">★ Focus areas (weak objectives)</div>
+      <div class="chip" data-d="new">New · 9/12</div>
       <div class="expand-all" id="expandAll">Expand all ▾</div>
     </div>
     <div id="qlist"></div>
@@ -2040,6 +2045,7 @@ const focusQuestions = [
   "n": 52,
   "d": 1,
   "focus": true,
+  "added": "9/12",
   "obj": "Fork vs resume",
   "scenario": "Developer Productivity with Claude",
   "title": "After an expensive analysis of a legacy service, you want to evaluate two refactoring approaches — extracting a service layer vs. inlining and simplifying — and compare the results. What session strategy fits?",
@@ -2076,6 +2082,7 @@ const focusQuestions = [
   "n": 53,
   "d": 1,
   "focus": true,
+  "added": "9/12",
   "obj": "Fork vs resume",
   "scenario": "Code Generation with Claude Code",
   "title": "You resume a named session from last week. In the meantime the team merged a large refactor touching most of the files the session had analyzed, and several of its earlier conclusions no longer hold. Best move?",
@@ -2112,6 +2119,7 @@ const focusQuestions = [
   "n": 54,
   "d": 1,
   "focus": true,
+  "added": "9/12",
   "obj": "Fork vs resume",
   "scenario": "Multi-Agent Research System",
   "title": "Which statement correctly distinguishes --resume from fork_session?",
@@ -2148,6 +2156,7 @@ const focusQuestions = [
   "n": 55,
   "d": 1,
   "focus": true,
+  "added": "9/12",
   "obj": "Fork vs resume",
   "scenario": "Developer Productivity with Claude",
   "title": "You resume a codebase-exploration session and want it to correctly re-analyze the three modules that changed. What is the reliable way to make that happen?",
@@ -2184,6 +2193,7 @@ const focusQuestions = [
   "n": 56,
   "d": 2,
   "focus": true,
+  "added": "9/12",
   "obj": "Built-in tools",
   "scenario": "Developer Productivity with Claude",
   "title": "You need to find every caller of processRefund() across an unfamiliar repo, then understand how three of them work. What is the correct tool sequence?",
@@ -2220,6 +2230,7 @@ const focusQuestions = [
   "n": 57,
   "d": 2,
   "focus": true,
+  "added": "9/12",
   "obj": "Built-in tools",
   "scenario": "Code Generation with Claude Code",
   "title": "An Edit call fails because the anchor text you targeted appears four times in the file. What is the correct recovery?",
@@ -2256,6 +2267,7 @@ const focusQuestions = [
   "n": 58,
   "d": 5,
   "focus": true,
+  "added": "9/12",
   "obj": "Built-in tools",
   "scenario": "Developer Productivity with Claude",
   "title": "You're starting on a 200k-line codebase you've never seen. Which approach builds understanding without exhausting context?",
@@ -2292,6 +2304,7 @@ const focusQuestions = [
   "n": 59,
   "d": 2,
   "focus": true,
+  "added": "9/12",
   "obj": "MCP loading",
   "scenario": "Developer Productivity with Claude",
   "title": "Your team's agent now connects six MCP servers. A developer asks why every request has gotten more expensive even when none of those tools are called. What is the correct explanation?",
@@ -2328,6 +2341,7 @@ const focusQuestions = [
   "n": 60,
   "d": 2,
   "focus": true,
+  "added": "9/12",
   "obj": "MCP loading",
   "scenario": "Multi-Agent Research System",
   "title": "When should content be exposed as an MCP resource rather than as an MCP tool?",
@@ -2364,6 +2378,7 @@ const focusQuestions = [
   "n": 61,
   "d": 2,
   "focus": true,
+  "added": "9/12",
   "obj": "Retry vs surface",
   "scenario": "Customer Support Resolution Agent",
   "title": "An MCP tool call fails. Which failure should the agent retry locally, and which should be surfaced to the coordinator or the user?",
@@ -2400,6 +2415,7 @@ const focusQuestions = [
   "n": 62,
   "d": 5,
   "focus": true,
+  "added": "9/12",
   "obj": "Retry vs surface",
   "scenario": "Multi-Agent Research System",
   "title": "A subagent's only source for one section of the report returns a 403 after several attempts. What should it report back?",
@@ -2436,6 +2452,7 @@ const focusQuestions = [
   "n": 63,
   "d": 3,
   "focus": true,
+  "added": "9/12",
   "obj": "Plan vs direct vs interview",
   "scenario": "Code Generation with Claude Code",
   "title": "Match the approach to the task: (i) a single-file bug fix with a clear stack trace, (ii) migrating a library across 45+ files with two viable integration strategies, (iii) building a caching layer in a domain you don't know well.",
@@ -2472,6 +2489,7 @@ const focusQuestions = [
   "n": 64,
   "d": 3,
   "focus": true,
+  "added": "9/12",
   "obj": "Plan vs direct vs interview",
   "scenario": "Code Generation with Claude Code",
   "title": "During a multi-phase migration, the discovery phase is producing huge volumes of file listings and search output that crowd out the planning discussion. What is the intended mechanism?",
@@ -2791,55 +2809,55 @@ refBlocks.push(...focusRefBlocks);
 
 /* ===== GAP-FILL: built-in tools, MCP loading, retry boundary, exam lens ===== */
 principles.push(
-{c:"--d2",t:"★ Grep finds content · Glob finds paths · Read loads · Edit needs a unique anchor",
+{c:"--d2",added:"9/12",t:"★ Grep finds content · Glob finds paths · Read loads · Edit needs a unique anchor",
  body:"<b>Grep</b> searches inside files — function names, error messages, import statements. <b>Glob</b> matches file paths by name or extension (<code>**/*.test.tsx</code>). <b>Read</b> loads what the search identified; <b>Write</b> replaces whole files; <b>Edit</b> makes targeted changes via a text match that must be <i>unique</i>. When Edit fails on a non-unique anchor, widen the anchor — and if no unique anchor exists, Read + Write is the documented fallback.",
  test:"Am I searching for something INSIDE a file (Grep) or for the file itself (Glob)? Am I loading before I've located? Reaching for Bash find/sed when a purpose-built tool exists is the over-engineered answer."},
-{c:"--d5",t:"★ Locate, then load — never load-everything-first",
+{c:"--d5",added:"9/12",t:"★ Locate, then load — never load-everything-first",
  body:"Build codebase understanding incrementally: Grep for entry points and key symbols, Read only those regions, follow imports outward as the task demands. To trace usage across wrapper modules, first identify all exported names, then search for each. Reading everything upfront exhausts context on irrelevant material; relying on 'typical patterns for this framework' instead of the actual code is the degradation symptom.",
  test:"Is this plan proportional to the question, or is it a sweep? Delegate verbose discovery (the Explore subagent) and persist findings to a scratchpad."},
-{c:"--d2",t:"★ Where MCP context actually lands",
+{c:"--d2",added:"9/12",t:"★ Where MCP context actually lands",
  body:"Tools from <b>all</b> configured servers are discovered at connection time and available simultaneously — their names, descriptions and schemas occupy request context on every turn, whether or not they're called. That's why rich descriptions are valuable but not free, and why server sprawl has an ongoing cost. <b>Resources</b> are the other half: they expose catalogs of what exists (issue summaries, doc hierarchies, DB schemas) so the agent skips exploratory calls made only to discover availability.",
  test:"Tools = what to DO. Resources = what EXISTS. Scoped deliberately, or is every session paying for six servers it rarely uses?"},
-{c:"--d2",t:"★ The retry boundary is the error category",
+{c:"--d2",added:"9/12",t:"★ The retry boundary is the error category",
  body:"<b>Transient</b> (timeout, service unavailable) → retry locally, it may succeed. <b>Validation</b> → retry with corrected input, or with the specific error appended. <b>Business</b> (policy violation) and <b>permission</b> (access denied) → deterministic; retrying changes nothing, so surface a structured refusal with <code>isRetryable:false</code> and what to do instead. And retries never conjure information that isn't in the source at all.",
  test:"Is the decision driven by a structured errorCategory field, or by scanning the error message text? Blanket retry and blanket escalation are both wrong."},
-{c:"--d3",t:"★ Direct vs plan mode vs interview — three modes, not two",
+{c:"--d3",added:"9/12",t:"★ Direct vs plan mode vs interview — three modes, not two",
  body:"<b>Direct execution</b>: simple, well-scoped, reversible (single-file fix with a clear stack trace). <b>Plan mode</b>: multi-file, multiple valid approaches, architectural consequences, stakeholder review — when the complexity is <i>already stated</i>, not 'if it emerges'. <b>Interview pattern</b>: when the unknown is your own requirements, in a domain you don't know well — Claude asks, you decide, before any plan is worth writing. Plan mode for investigation then direct execution for implementation is a normal combination.",
  test:"Is the uncertainty in the CODE (plan mode) or in MY requirements (interview)? Is it genuinely small and reversible (direct)?"},
-{c:"--d1",t:"★ Read the exam's lens: production scale is the default assumption",
+{c:"--d1",added:"9/12",t:"★ Read the exam's lens: production scale is the default assumption",
  body:"Scenarios assume teams, volume, compliance, and systems that run unattended — so the 'correct' answer is routinely the one that adds deterministic enforcement, structured data, calibrated routing, and observability, even where a solo practitioner on a small workload would reasonably do something lighter. When two options look defensible, ask which one still holds at 10,000 documents a day with auditors watching and three teammates who never read your prompt.",
  test:"Am I answering for my own use case, or for the scaled production system described? The guardrailed, instrumented option usually wins here."}
 );
 
 traps.push(
-{t:"★ Using Glob (or Bash find) to search file contents",
+{added:"9/12",t:"★ Using Glob (or Bash find) to search file contents",
  good:"Grep searches contents; Glob matches paths. Grep to locate, then Read narrowly.",
  bad:"Globbing **/*.ts and Reading each file to find a function name — enormous context burned on files that never mention it."},
-{t:"★ Retrying a failed Edit unchanged",
+{added:"9/12",t:"★ Retrying a failed Edit unchanged",
  good:"Widen the anchor until unique; if none exists, Read the file then Write it back.",
  bad:"Retrying the same non-unique Edit ('it might match this time'), or dropping to sed, which replaces all four occurrences."},
-{t:"★ Reading everything upfront to 'have full context'",
+{added:"9/12",t:"★ Reading everything upfront to 'have full context'",
  good:"Grep entry points → Read those regions → follow imports as questions demand → scratchpad the findings.",
  bad:"Reading all of src/ once, or falling back on 'typical patterns for this framework' instead of the actual code."},
-{t:"★ Assuming unused MCP tools are free",
+{added:"9/12",t:"★ Assuming unused MCP tools are free",
  good:"Scope servers deliberately; project-level for shared, user-level for experimental; expose catalogs as resources.",
  bad:"'Unused tools get stripped' / 'servers load on first use' — definitions are present from connection, every turn."},
-{t:"★ Deciding retry by reading the error message",
+{added:"9/12",t:"★ Deciding retry by reading the error message",
  good:"Structured errorCategory + isRetryable drives the branch.",
  bad:"Retrying when the message contains 'temporary' — the same keyword-scanning anti-pattern as parsing text for loop termination."},
-{t:"★ Blanket retry or blanket escalation",
+{added:"9/12",t:"★ Blanket retry or blanket escalation",
  good:"Transient/validation → retry. Business/permission → structured refusal with alternatives.",
  bad:"Three retries on everything (wastes cycles on deterministic refusals) or surfacing everything (floods the coordinator with absorbed blips)."},
-{t:"★ Plan mode as a universal good",
+{added:"9/12",t:"★ Plan mode as a universal good",
  good:"Direct for small reversible changes; plan mode when complexity is already known; interview when YOUR requirements are the unknown.",
  bad:"'Planning never hurts' on a single-file stack-trace fix — and 'use plan mode only if complexity emerges' when the prompt already says 45 files and two strategies."},
-{t:"★ Letting discovery output crowd out the plan",
+{added:"9/12",t:"★ Letting discovery output crowd out the plan",
  good:"Explore subagent isolates verbose discovery and returns a summary to the main conversation.",
  bad:"Running /compact repeatedly after the fact, or abandoning plan mode because the session got noisy."}
 );
 
 refBlocks.push(
-{h:"★ Built-in tool selection",rows:[
+{added:"9/12",h:"★ Built-in tool selection",rows:[
  ["Grep","Search file CONTENTS — function names, error strings, imports. Finds callers."],
  ["Glob","Match file PATHS by pattern — **/*.test.tsx, src/**/*.go. Finds files by name."],
  ["Read","Load contents — ideally only the regions a search identified."],
@@ -2849,7 +2867,7 @@ refBlocks.push(
  ["Explore subagent","Isolates verbose discovery; returns a summary, preserving main-session context."],
  ["Exploration order","Grep entry points → Read those regions → follow imports → scratchpad findings."]
 ]},
-{h:"★ MCP loading, discovery & errors",rows:[
+{added:"9/12",h:"★ MCP loading, discovery & errors",rows:[
  ["Discovery","All configured servers' tools are discovered at connection time, available simultaneously."],
  ["Context cost","Every tool's name/description/schema sits in each request, called or not."],
  ["Resources","Catalogs of what EXISTS — issue summaries, doc hierarchies, DB schemas. Removes discovery round-trips."],
@@ -2861,7 +2879,7 @@ refBlocks.push(
  ["permission","Access denied → not retryable; surface with alternatives."],
  ["Access failure ≠ empty result","A 403 is not 'searched, found nothing'. The distinction must survive to the coordinator."]
 ]},
-{h:"★ Execution mode selection",rows:[
+{added:"9/12",h:"★ Execution mode selection",rows:[
  ["Direct execution","Simple, well-scoped, reversible — single-file fix with a clear stack trace."],
  ["Plan mode","Multi-file, multiple valid approaches, architectural, needs review — complexity already known."],
  ["Interview pattern","Unfamiliar domain — Claude asks questions to surface decisions YOU haven't made."],
@@ -3088,7 +3106,7 @@ const visuals = [
  <text x="562" y="276" font-size="10.5" fill="#3d3833">✗ "restart the session and be more concise"</text>
 </svg>`},
 
-{t:"Session state — resume, fork, or start fresh",
+{added:"9/12",t:"Session state — resume, fork, or start fresh",
  lead:"Three different moves, chosen by how much of the prior state is still true. <b>Resume</b> = one timeline continuing · <b>fork</b> = one timeline splitting from a shared baseline · <b>fresh + summary</b> = a new timeline seeded with distilled knowledge.",
  svg:`<svg viewBox="0 0 880 500" xmlns="http://www.w3.org/2000/svg" font-family="ui-sans-serif,-apple-system,system-ui,sans-serif">
  <defs><marker id="a8" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#6b6459"/></marker>
@@ -3558,6 +3576,7 @@ const visuals = [
 
 /* ---------------- RENDER ---------------- */
 function el(html){const t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstChild;}
+const newTag=x=>x.added?`<span class="badge new">New · ${x.added}</span>`:'';
 
 const qlist=document.getElementById('qlist');
 questions.forEach(q=>{
@@ -3567,7 +3586,7 @@ questions.forEach(q=>{
       <div class="why"><span class="tagword">${o.correct?'✓ Why it wins':'✗ Why it fails'}</span> — ${o.why}</div>
     </div>`).join('');
   const card=el(`
-    <div class="card" data-d="${q.d}" data-focus="${q.focus?1:0}">
+    <div class="card" data-d="${q.d}" data-focus="${q.focus?1:0}" data-new="${q.added?1:0}">
       <div class="card-head">
         <div class="qnum">${q.n}</div>
         <div class="qtitle">${q.title}
@@ -3576,6 +3595,7 @@ questions.forEach(q=>{
             <span class="badge ghost">${q.scenario}</span>
             <span class="badge ghost">Answer: ${q.correct}</span>
             ${q.focus?`<span class="badge focus">★ ${q.obj}</span>`:''}
+            ${newTag(q)}
           </div>
         </div>
         <div class="chev">▶</div>
@@ -3594,7 +3614,7 @@ const plist=document.getElementById('plist');
 principles.forEach(p=>{
   plist.appendChild(el(`
     <div class="pcard">
-      <h3><span class="dot" style="background:var(${p.c})"></span>${p.t}</h3>
+      <h3><span class="dot" style="background:var(${p.c})"></span>${p.t}${newTag(p)}</h3>
       <p>${p.body}</p>
       <p class="test"><b>Quick test:</b> ${p.test}</p>
     </div>`));
@@ -3604,7 +3624,7 @@ const tlist=document.getElementById('tlist');
 traps.forEach(t=>{
   tlist.appendChild(el(`
     <div class="pcard">
-      <h3>${t.t}</h3>
+      <h3>${t.t}${newTag(t)}</h3>
       <div class="twocol">
         <div class="mini good"><span class="lab">Do this</span>${t.good}</div>
         <div class="mini bad"><span class="lab">Not this</span>${t.bad}</div>
@@ -3626,7 +3646,7 @@ const reflist=document.getElementById('reflist');
 refBlocks.forEach(b=>{
   reflist.appendChild(el(`
     <div class="ref">
-      <h3>${b.h}</h3>
+      <h3>${b.h}${newTag(b)}</h3>
       <table><thead><tr><th style="width:38%">Item</th><th>Meaning</th></tr></thead>
       <tbody>${b.rows.map(r=>`<tr><td><code>${r[0]}</code></td><td>${r[1]}</td></tr>`).join('')}</tbody></table>
     </div>`));
@@ -3635,7 +3655,7 @@ refBlocks.forEach(b=>{
 
 const vlist=document.getElementById('vlist');
 visuals.forEach(v=>{
-  vlist.appendChild(el(`<div class="vcard"><h3>${v.t}</h3><p class="vlead">${v.lead}</p>${v.svg}</div>`));
+  vlist.appendChild(el(`<div class="vcard"><h3>${v.t}${newTag(v)}</h3><p class="vlead">${v.lead}</p>${v.svg}</div>`));
 });
 
 /* ---------------- INTERACTIONS ---------------- */
@@ -3656,7 +3676,7 @@ chips.forEach(chip=>{
     chip.classList.add('on');
     const d=chip.dataset.d;
     document.querySelectorAll('#qlist .card').forEach(card=>{
-      card.style.display=(d==='all'||(d==='focus'?card.dataset.focus==='1':card.dataset.d===d))?'':'none';
+      card.style.display=(d==='all'||(d==='focus'?card.dataset.focus==='1':d==='new'?card.dataset.new==='1':card.dataset.d===d))?'':'none';
     });
   });
 });

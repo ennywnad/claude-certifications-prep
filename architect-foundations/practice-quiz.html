@@ -39,6 +39,9 @@
   .chip[data-d="5"].on{background:var(--d5)}
   .chip[data-d="focus"].on{background:var(--focus);color:#fff !important;border-color:transparent}
   .badge.focus{background:var(--focus-soft);color:var(--focus);border:1px solid #e8c6bb}
+  .chip[data-d="new"]{border-style:dashed}
+  .chip[data-d="new"].on{background:var(--muted);color:#fff !important;border-style:solid}
+  .badge.new{background:transparent;color:var(--muted);border:1px dashed #cfc6b8;font-weight:600}
   .score{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:13px;color:var(--muted)}
   .score b{color:var(--ink);font-size:15px}
   .btn{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:6px 12px;
@@ -131,6 +134,7 @@
       <div class="chip" data-d="4" style="border-color:var(--d4);color:var(--d4)">D4</div>
       <div class="chip" data-d="5" style="border-color:var(--d5);color:var(--d5)">D5</div>
       <div class="chip" data-d="focus" style="border-color:var(--focus);color:var(--focus)">★ Focus areas</div>
+      <div class="chip" data-d="new">New · 9/12</div>
     </div>
     <div class="score">
       <span>Score <b id="scoreN">0</b>/<b id="scoreD">0</b></span>
@@ -145,7 +149,7 @@
   <div class="empty" id="empty" style="display:none">No questions in this domain.</div>
 
   <footer>
-    24 original practice questions + a 54-question ★ Focus set targeting the objectives scored below 80% on the 8/12/2026 attempt. Grounded in Exam Guide v0.2. D1 Agentic Architecture · D2 Tool &amp; MCP · D3 Claude Code · D4 Prompt &amp; Output · D5 Context &amp; Reliability.
+    24 original practice questions + a 54-question ★ Focus set targeting the objectives scored below 80% on the 8/12/2026 attempt, 13 of them added 9/12 from reader feedback (tagged New · 9/12). Grounded in Exam Guide v0.2. D1 Agentic Architecture · D2 Tool &amp; MCP · D3 Claude Code · D4 Prompt &amp; Output · D5 Context &amp; Reliability.
   </footer>
 </div>
 
@@ -1119,7 +1123,7 @@ const Q=[
  ],
  principle:"Resumption = keep the prior findings, detect changes deterministically outside the model, inject them as context, and re-analyze only what actually changed."},
 /* --- OBJ: Fork vs resume (session state) --- */
-{d:1,focus:true,obj:"Fork vs resume",scenario:"Developer Productivity with Claude",
+{d:1,focus:true,added:"9/12",obj:"Fork vs resume",scenario:"Developer Productivity with Claude",
  title:"After an expensive analysis of a legacy service, you want to evaluate two refactoring approaches — extracting a service layer vs. inlining and simplifying — and compare the results. What session strategy fits?",
  correct:"C",
  opts:[
@@ -1134,7 +1138,7 @@ const Q=[
  ],
  principle:"fork_session = independent branches from a shared baseline, for comparing divergent approaches. Resume = one timeline continuing. Don't confuse branching with continuing."},
 
-{d:1,focus:true,obj:"Fork vs resume",scenario:"Code Generation with Claude Code",
+{d:1,focus:true,added:"9/12",obj:"Fork vs resume",scenario:"Code Generation with Claude Code",
  title:"You resume a named session from last week. In the meantime the team merged a large refactor touching most of the files the session had analyzed, and several of its earlier conclusions no longer hold. Best move?",
  correct:"B",
  opts:[
@@ -1149,7 +1153,7 @@ const Q=[
  ],
  principle:"Prior context mostly valid → resume with a targeted change list. Prior context mostly invalid → fresh session seeded with a structured summary."},
 
-{d:1,focus:true,obj:"Fork vs resume",scenario:"Multi-Agent Research System",
+{d:1,focus:true,added:"9/12",obj:"Fork vs resume",scenario:"Multi-Agent Research System",
  title:"Which statement correctly distinguishes --resume from fork_session?",
  correct:"D",
  opts:[
@@ -1164,7 +1168,7 @@ const Q=[
  ],
  principle:"Resume continues; fork branches. Both inherit prior context as-is — neither one refreshes anything that went stale while you were away."},
 
-{d:1,focus:true,obj:"Fork vs resume",scenario:"Developer Productivity with Claude",
+{d:1,focus:true,added:"9/12",obj:"Fork vs resume",scenario:"Developer Productivity with Claude",
  title:"You resume a codebase-exploration session and want it to correctly re-analyze the three modules that changed. What is the reliable way to make that happen?",
  correct:"A",
  opts:[
@@ -1179,7 +1183,7 @@ const Q=[
  ],
  principle:"Detect changes deterministically outside the model, inject the specific list, re-analyze only those files. Never ask the agent what it thinks changed."},
 /* --- OBJ: Built-in tool selection (Grep / Glob / Read / Edit) --- */
-{d:2,focus:true,obj:"Built-in tools",scenario:"Developer Productivity with Claude",
+{d:2,focus:true,added:"9/12",obj:"Built-in tools",scenario:"Developer Productivity with Claude",
  title:"You need to find every caller of processRefund() across an unfamiliar repo, then understand how three of them work. What is the correct tool sequence?",
  correct:"B",
  opts:[
@@ -1194,7 +1198,7 @@ const Q=[
  ],
  principle:"Grep = search file CONTENTS (function names, error messages, imports). Glob = match file PATHS by name/extension (**/*.test.tsx). Read = load what the search found. Locate, then load."},
 
-{d:2,focus:true,obj:"Built-in tools",scenario:"Code Generation with Claude Code",
+{d:2,focus:true,added:"9/12",obj:"Built-in tools",scenario:"Code Generation with Claude Code",
  title:"An Edit call fails because the anchor text you targeted appears four times in the file. What is the correct recovery?",
  correct:"C",
  opts:[
@@ -1209,7 +1213,7 @@ const Q=[
  ],
  principle:"Edit needs a unique text match. Non-unique → widen the anchor; no unique anchor available → Read + Write as the fallback for reliable modification."},
 
-{d:5,focus:true,obj:"Built-in tools",scenario:"Developer Productivity with Claude",
+{d:5,focus:true,added:"9/12",obj:"Built-in tools",scenario:"Developer Productivity with Claude",
  title:"You're starting on a 200k-line codebase you've never seen. Which approach builds understanding without exhausting context?",
  correct:"D",
  opts:[
@@ -1225,7 +1229,7 @@ const Q=[
  principle:"Build understanding incrementally — Grep to find entry points, Read to follow specific flows — rather than loading everything upfront. Persist findings externally; isolate verbose discovery."},
 
 /* --- OBJ: MCP loading & discovery --- */
-{d:2,focus:true,obj:"MCP loading",scenario:"Developer Productivity with Claude",
+{d:2,focus:true,added:"9/12",obj:"MCP loading",scenario:"Developer Productivity with Claude",
  title:"Your team's agent now connects six MCP servers. A developer asks why every request has gotten more expensive even when none of those tools are called. What is the correct explanation?",
  correct:"A",
  opts:[
@@ -1240,7 +1244,7 @@ const Q=[
  ],
  principle:"MCP tools are discovered at connection time and all configured servers' tools are available — and described — simultaneously. Scope servers deliberately; more servers means more context in every request."},
 
-{d:2,focus:true,obj:"MCP loading",scenario:"Multi-Agent Research System",
+{d:2,focus:true,added:"9/12",obj:"MCP loading",scenario:"Multi-Agent Research System",
  title:"When should content be exposed as an MCP resource rather than as an MCP tool?",
  correct:"B",
  opts:[
@@ -1256,7 +1260,7 @@ const Q=[
  principle:"Resources = what exists (catalogs, schemas, hierarchies, discoverability). Tools = what to do (retrieve, act). Exposing catalogs as resources removes exploratory discovery calls."},
 
 /* --- OBJ: Retry vs surface --- */
-{d:2,focus:true,obj:"Retry vs surface",scenario:"Customer Support Resolution Agent",
+{d:2,focus:true,added:"9/12",obj:"Retry vs surface",scenario:"Customer Support Resolution Agent",
  title:"An MCP tool call fails. Which failure should the agent retry locally, and which should be surfaced to the coordinator or the user?",
  correct:"C",
  opts:[
@@ -1271,7 +1275,7 @@ const Q=[
  ],
  principle:"Return errorCategory (transient / validation / business / permission) + isRetryable + a human-readable message. The category drives the decision — never a keyword scan of the message, never blanket retry, never blanket escalation."},
 
-{d:5,focus:true,obj:"Retry vs surface",scenario:"Multi-Agent Research System",
+{d:5,focus:true,added:"9/12",obj:"Retry vs surface",scenario:"Multi-Agent Research System",
  title:"A subagent's only source for one section of the report returns a 403 after several attempts. What should it report back?",
  correct:"D",
  opts:[
@@ -1287,7 +1291,7 @@ const Q=[
  principle:"Structured errors carry type, recoverability, what was attempted, partial results, and alternatives. Never suppress as success, never kill the workflow, never return a generic message."},
 
 /* --- OBJ: Plan vs direct vs interview --- */
-{d:3,focus:true,obj:"Plan vs direct vs interview",scenario:"Code Generation with Claude Code",
+{d:3,focus:true,added:"9/12",obj:"Plan vs direct vs interview",scenario:"Code Generation with Claude Code",
  title:"Match the approach to the task: (i) a single-file bug fix with a clear stack trace, (ii) migrating a library across 45+ files with two viable integration strategies, (iii) building a caching layer in a domain you don't know well.",
  correct:"B",
  opts:[
@@ -1302,7 +1306,7 @@ const Q=[
  ],
  principle:"Direct execution: simple, well-scoped, reversible. Plan mode: multi-file, multiple valid approaches, architectural, needs stakeholder review — when complexity is already known. Interview pattern: when YOU don't yet know the design questions."},
 
-{d:3,focus:true,obj:"Plan vs direct vs interview",scenario:"Code Generation with Claude Code",
+{d:3,focus:true,added:"9/12",obj:"Plan vs direct vs interview",scenario:"Code Generation with Claude Code",
  title:"During a multi-phase migration, the discovery phase is producing huge volumes of file listings and search output that crowd out the planning discussion. What is the intended mechanism?",
  correct:"A",
  opts:[
@@ -1364,7 +1368,7 @@ Q.forEach((q,i)=>{
       </div>
     </div>`).join('');
   const card=el(`
-    <div class="card" data-d="${q.d}" data-focus="${q.focus?1:0}" data-i="${i}">
+    <div class="card" data-d="${q.d}" data-focus="${q.focus?1:0}" data-new="${q.added?1:0}" data-i="${i}">
       <div class="card-head">
         <div class="qnum">${i+1}</div>
         <div class="qtitle">${q.title}
@@ -1372,6 +1376,7 @@ Q.forEach((q,i)=>{
             <span class="badge d${q.d}">Domain ${q.d}</span>
             <span class="badge ghost">${q.scenario}</span>
             ${q.focus?`<span class="badge focus">★ ${q.obj}</span>`:''}
+            ${q.added?`<span class="badge new">New · ${q.added}</span>`:''}
           </div>
         </div>
       </div>
@@ -1442,7 +1447,7 @@ chips.forEach(chip=>{
     chips.forEach(c=>c.classList.remove('on'));chip.classList.add('on');
     const d=chip.dataset.d;let shown=0;
     document.querySelectorAll('#list .card').forEach(card=>{
-      const vis=(d==='all'||(d==='focus'?card.dataset.focus==='1':card.dataset.d===d));
+      const vis=(d==='all'||(d==='focus'?card.dataset.focus==='1':d==='new'?card.dataset.new==='1':card.dataset.d===d));
       card.style.display=vis?'':'none';if(vis)shown++;
     });
     document.getElementById('empty').style.display=shown?'none':'block';
