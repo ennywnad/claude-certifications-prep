@@ -39,6 +39,9 @@
   .chip[data-d="5"].on{background:var(--d5)}
   .chip[data-d="focus"].on{background:var(--focus);color:#fff !important;border-color:transparent}
   .badge.focus{background:var(--focus-soft);color:var(--focus);border:1px solid #e8c6bb}
+  .chip[data-d="new"]{border-style:dashed}
+  .chip[data-d="new"].on{background:var(--muted);color:#fff !important;border-style:solid}
+  .badge.new{background:transparent;color:var(--muted);border:1px dashed #cfc6b8;font-weight:600}
   .score{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:13px;color:var(--muted)}
   .score b{color:var(--ink);font-size:15px}
   .btn{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:6px 12px;
@@ -131,6 +134,7 @@
       <div class="chip" data-d="4" style="border-color:var(--d4);color:var(--d4)">D4</div>
       <div class="chip" data-d="5" style="border-color:var(--d5);color:var(--d5)">D5</div>
       <div class="chip" data-d="focus" style="border-color:var(--focus);color:var(--focus)">★ Focus areas</div>
+      <div class="chip" data-d="new">New · 9/12</div>
     </div>
     <div class="score">
       <span>Score <b id="scoreN">0</b>/<b id="scoreD">0</b></span>
@@ -145,7 +149,7 @@
   <div class="empty" id="empty" style="display:none">No questions in this domain.</div>
 
   <footer>
-    24 original practice questions + a 41-question ★ Focus set targeting the objectives scored below 80% on the 8/12/2026 attempt. Grounded in Exam Guide v0.2. D1 Agentic Architecture · D2 Tool &amp; MCP · D3 Claude Code · D4 Prompt &amp; Output · D5 Context &amp; Reliability.
+    24 original practice questions + a 54-question ★ Focus set targeting the objectives scored below 80% on the 8/12/2026 attempt, 13 of them added 9/12 from reader feedback (tagged New · 9/12). Grounded in Exam Guide v0.2. D1 Agentic Architecture · D2 Tool &amp; MCP · D3 Claude Code · D4 Prompt &amp; Output · D5 Context &amp; Reliability.
   </footer>
 </div>
 
@@ -529,7 +533,7 @@ const Q=[
    why:"Path-scoped rules change *when* guidance loads, not whether it's enforced. Still model discretion, still a non-zero failure rate."},
   {l:"C",body:"Keep both in CLAUDE.md but add few-shot examples showing correct behavior.",correct:false,
    why:"Few-shot raises the odds; it cannot guarantee. Anything with real consequences (a destroyed branch) needs deterministic enforcement."},
-  {l:"D",body:"Put the destructive-git prohibition in settings permissions as a deny rule, implement the formatter as a PostToolUse hook on Edit/Write, and leave only style preferences in CLAUDE.md.",correct:true,
+  {l:"D",body:"Prohibition → settings permissions deny; formatter → PostToolUse hook; only style preferences stay in CLAUDE.md.",correct:true,
    why:"The two rules are different enforcement classes. A prohibition on an action = permissions deny (blocked before it runs). A mandatory action after every edit = PostToolUse hook (runs regardless of the model). CLAUDE.md keeps only what is genuinely advisory."}
  ],
  principle:"Sort every instruction by enforcement class: must-never-happen → settings permissions deny; must-always-happen-after-an-action → hook; preference/context the model should weigh → CLAUDE.md."},
@@ -571,7 +575,7 @@ const Q=[
  opts:[
   {l:"A",body:"A PreToolUse hook matching Edit and Write that runs the formatter on the target file.",correct:false,
    why:"PreToolUse fires *before* the edit is applied — you'd format the old content and then overwrite it. Quality enforcement on new content must be PostToolUse."},
-  {l:"B",body:"A PostToolUse hook matching Edit|Write|MultiEdit that runs the formatter and linter against the edited file path from the hook input.",correct:true,
+  {l:"B",body:"A PostToolUse hook on Edit|Write|MultiEdit that formats and lints the edited file.",correct:true,
    why:"PostToolUse fires after the tool succeeds, so the file on disk is the new content. Matching the file-editing tools and using the path supplied in the hook payload scopes the work to just what changed."},
   {l:"C",body:"A Stop hook that formats the whole repository when the session ends.",correct:false,
    why:"Defers feedback to the very end, reformats untouched files, and produces noisy diffs. It also means Claude keeps building on unformatted code all session."},
@@ -584,7 +588,7 @@ const Q=[
  title:"Your PostToolUse lint hook runs, finds errors, and prints them — but Claude keeps going as if nothing happened and the errors pile up. What is the fix?",
  correct:"A",
  opts:[
-  {l:"A",body:"Have the hook exit with the blocking status (non-zero exit code 2) and write the lint output to stderr so the failure is fed back to Claude for correction.",correct:true,
+  {l:"A",body:"Exit with the blocking status and write the lint output to stderr.",correct:true,
    why:"A hook that only prints to stdout is informational. Exiting with the blocking code and putting the diagnostic on stderr surfaces the failure to the model as feedback it must act on — the loop that actually enforces quality."},
   {l:"B",body:"Move the lint step into a PreToolUse hook so it runs earlier.",correct:false,
    why:"Timing isn't the problem; the hook already runs. Nothing about running earlier makes the result visible to the model — and pre-edit lint checks the wrong content."},
@@ -603,8 +607,8 @@ const Q=[
    why:"Trades a real guarantee for a probabilistic one. You want the enforcement, just not on that cadence."},
   {l:"B",body:"Keep the full suite on PostToolUse but raise the hook timeout.",correct:false,
    why:"Doesn't address the cost — it just permits the slowness. The cadence is the problem, not the timeout."},
-  {l:"C",body:"Keep a fast PostToolUse hook (format + lint + type-check on the changed file) and move the full test suite to a Stop hook that runs once when Claude finishes.",correct:true,
-   why:"Match hook cost to hook frequency. Cheap per-file checks catch defects immediately; the expensive whole-repo verification runs once at the natural completion boundary."},
+  {l:"C",body:"Fast per-file checks on PostToolUse; the full test suite on a Stop hook.",correct:true,
+   why:"Format, lint and type-check the changed file on every edit; run the expensive suite once when Claude finishes. Match hook cost to hook frequency. Cheap per-file checks catch defects immediately; the expensive whole-repo verification runs once at the natural completion boundary."},
   {l:"D",body:"Run the full suite but only on every third edit using a counter file.",correct:false,
    why:"Arbitrary and non-deterministic about which state gets verified — the hallmark of a hacky distractor. Choose the correct trigger point instead of sampling."}
  ],
@@ -634,7 +638,7 @@ const Q=[
    why:"Defeats the purpose of project scope — gitignoring it means teammates never receive the server config at all, and the secret still sits in plaintext on disk."},
   {l:"B",body:"Store the token in CLAUDE.md so Claude can supply it when connecting.",correct:false,
    why:"Puts a credential into model context and into version control. Never do this."},
-  {l:"C",body:"Reference it via environment variable expansion, e.g. \"GITHUB_TOKEN\": \"${GITHUB_TOKEN}\", and have each developer set the variable locally.",correct:true,
+  {l:"C",body:"Use environment variable expansion: \"GITHUB_TOKEN\": \"${GITHUB_TOKEN}\".",correct:true,
    why:"Environment variable expansion in .mcp.json lets the shared, committed config carry the server definition while each person supplies their own secret — config sharing without secret sharing."},
   {l:"D",body:"Configure the server in ~/.claude.json instead so the token stays local.",correct:false,
    why:"Solves the secret problem by abandoning the sharing requirement. Env var expansion gets you both."}
@@ -645,8 +649,8 @@ const Q=[
  title:"A new teammate reports that your custom /deploy-check slash command and the team's MCP tools \"don't exist\" for them, while they work fine for you. What is the most likely cause?",
  correct:"A",
  opts:[
-  {l:"A",body:"You created them in user scope (~/.claude/commands/, ~/.claude.json) rather than project scope, so they never entered version control.",correct:true,
-   why:"The canonical hierarchy diagnosis: user-level configuration applies only to that user and is not shared via VCS. Symptom — works for the author, missing for everyone else."},
+  {l:"A",body:"You created them in user scope, not project scope, so they never entered version control.",correct:true,
+   why:"That means ~/.claude/commands/ and ~/.claude.json rather than the committed project files. The canonical hierarchy diagnosis: user-level configuration applies only to that user and is not shared via VCS. Symptom — works for the author, missing for everyone else."},
   {l:"B",body:"Their Claude Code version is older and doesn't support slash commands.",correct:false,
    why:"Possible in theory but not the pattern the scenario describes; both a command and MCP tools missing together points squarely at scope, not version."},
   {l:"C",body:"The project CLAUDE.md doesn't mention the command, so Claude doesn't know it exists.",correct:false,
@@ -726,8 +730,8 @@ const Q=[
    why:"All-required schemas push the model to fabricate values when the document lacks them, making accuracy worse. And requiredness has nothing to do with a value being placed in the wrong field."},
   {l:"B",body:"Tool use is failing; fall back to prompt-based JSON with validation.",correct:false,
    why:"Nothing here indicates a tool-use failure — the JSON is well-formed and schema-valid. Falling back reintroduces syntax errors on top of the semantic ones."},
-  {l:"C",body:"Strict schemas eliminate syntax errors but not semantic errors — add semantic validation (e.g. extract calculated_total alongside stated_total and flag mismatches) and clarify field descriptions.",correct:true,
-   why:"This is the core distinction: the schema guarantees shape, not truth. Semantic correctness needs its own validation layer plus better field-level descriptions to disambiguate similar fields."},
+  {l:"C",body:"Add semantic validation; a schema guarantees shape, not truth.",correct:true,
+   why:"Extract calculated_total alongside stated_total and flag mismatches, and clarify field descriptions so similar fields stop being confused. This is the core distinction: the schema guarantees shape, not truth. Semantic correctness needs its own validation layer plus better field-level descriptions to disambiguate similar fields."},
   {l:"D",body:"Increase temperature so the model considers more possibilities.",correct:false,
    why:"Backwards for extraction, and unrelated to the failure mode."}
  ],
@@ -757,7 +761,7 @@ const Q=[
    why:"\"auto\" is the default that is already permitting text responses. Prompt insistence doesn't change what the parameter allows."},
   {l:"B",body:"tool_choice: \"none\" and parse the text output instead.",correct:false,
    why:"\"none\" forbids tool use entirely — the opposite of the requirement."},
-  {l:"C",body:"tool_choice: \"any\" so the model must call one of the provided tools, or a forced {\"type\":\"tool\",\"name\":\"extract_invoice\"} if exactly one schema applies.",correct:true,
+  {l:"C",body:"tool_choice: \"any\", or a forced {\"type\":\"tool\",\"name\":…} if one schema applies.",correct:true,
    why:"\"any\" guarantees some tool is called (right when several schemas exist and the document type is unknown); naming a specific tool guarantees that one runs when there's only one valid extraction."},
   {l:"D",body:"Catch the exception and retry the request unchanged up to three times.",correct:false,
    why:"Papers over a configuration problem with retries. The parameter exists precisely so this cannot happen."}
@@ -789,7 +793,7 @@ const Q=[
    why:"Descriptions improve selection probability but provide no guarantee when a downstream step depends on prerequisite data."},
   {l:"C",body:"Set tool_choice: \"any\" so a tool is always called.",correct:false,
    why:"Guarantees *a* tool call, not *which* one or in what order. Doesn't address sequencing at all."},
-  {l:"D",body:"Sequence it in your own control flow: first call forces {\"type\":\"tool\",\"name\":\"extract_metadata\"}, then pass its result into a second call for the enrichment step.",correct:true,
+  {l:"D",body:"Orchestrate it in code: force extract_metadata first, then call enrichment with its result.",correct:true,
    why:"Prerequisite ordering is orchestration, not prompting. Forcing the specific tool on turn one and gating the dependent call in code makes the sequence deterministic."}
  ],
  principle:"Guarantee ordering in your orchestration code (forced tool_choice per step, dependent call gated on the prior result) — never through tool descriptions or array order."},
@@ -799,8 +803,8 @@ const Q=[
  title:"Developers dismiss about 40% of your automated review findings as false positives, but you have no idea which kinds. What instrumentation lets you systematically improve the prompt?",
  correct:"A",
  opts:[
-  {l:"A",body:"Add a detected_pattern field to every structured finding (the code construct that triggered it), log it alongside the developer's accept/dismiss action, and analyze which patterns dominate dismissals.",correct:true,
-   why:"Structured metadata about *why* a finding fired turns anecdote into a dataset. Once you see that, say, 70% of dismissals come from one construct, you know precisely which prompt rule, schema field, or few-shot example to change."},
+  {l:"A",body:"Add a detected_pattern field to each finding and log it against the accept/dismiss action.",correct:true,
+   why:"detected_pattern records the code construct that triggered the finding, so you can see which patterns dominate dismissals. Structured metadata about *why* a finding fired turns anecdote into a dataset. Once you see that, say, 70% of dismissals come from one construct, you know precisely which prompt rule, schema field, or few-shot example to change."},
   {l:"B",body:"Add a free-text \"reason for dismissal\" box for developers.",correct:false,
    why:"Optional free text is sparsely filled and unaggregatable. It also puts the labeling burden on humans rather than capturing it automatically from the model's own output."},
   {l:"C",body:"Lower the sensitivity by instructing the model to report only high-confidence issues.",correct:false,
@@ -818,8 +822,8 @@ const Q=[
    why:"Retrying for information that isn't in the document burns cost on a guaranteed failure and delays the human handoff that will actually resolve it."},
   {l:"B",body:"Retry nothing; route all validation failures to human review to protect accuracy.",correct:false,
    why:"Wastes reviewer capacity on format and structural errors the model corrects reliably when given the specific validation error."},
-  {l:"C",body:"Retry format, structural, and semantic-validation errors by appending the original document, the failed extraction, and the specific error; route to a human when the required information is absent from the source.",correct:true,
-   why:"The dividing line is whether the information exists to be found. Correctable output errors → retry with specific feedback. Missing source information → no number of retries produces it."},
+  {l:"C",body:"Retry with the specific validation error appended; escalate when the information is absent.",correct:true,
+   why:"The retry includes the original document, the failed extraction, and the exact error. The dividing line is whether the information exists to be found. Correctable output errors → retry with specific feedback. Missing source information → no number of retries produces it."},
   {l:"D",body:"Retry with a higher temperature to break the model out of the repeated mistake.",correct:false,
    why:"Randomizes rather than informs. The mechanism that works is giving the model the *specific* validation error, not more variance."}
  ],
@@ -831,8 +835,8 @@ const Q=[
  opts:[
   {l:"A",body:"A single overall_confidence float on the record.",correct:false,
    why:"One aggregate score can't tell you which field is suspect, so it can't route review attention. Field-level signals are what calibrate routing."},
-  {l:"B",body:"Extract calculated_total alongside stated_total, add a conflict_detected boolean with a description, and include per-field confidence scores.",correct:true,
-   why:"These are self-validating schema patterns: the model reports both the derived and the asserted value so code can compare them, flags internal source inconsistency explicitly, and gives field-level signals for review routing."},
+  {l:"B",body:"Extract calculated_total alongside stated_total, plus per-field confidence scores.",correct:true,
+   why:"Add a conflict_detected boolean with a description for internally inconsistent sources. These are self-validating schema patterns: the model reports both the derived and the asserted value so code can compare them, flags internal source inconsistency explicitly, and gives field-level signals for review routing."},
   {l:"C",body:"A free-text notes field where the model can mention anything odd.",correct:false,
    why:"Unstructured and unqueryable — you can't threshold, route, or aggregate on prose."},
   {l:"D",body:"A retry_recommended boolean the model sets when unsure.",correct:false,
@@ -849,7 +853,7 @@ const Q=[
    why:"Random sampling measures quality but doesn't allocate scarce attention where errors actually are — most reviewed records will be correct and easy."},
   {l:"B",body:"Review the 15% of documents that took the longest to process.",correct:false,
    why:"Latency is unrelated to extraction accuracy — a proxy with no established relationship to error rate."},
-  {l:"C",body:"Route on field-level confidence calibrated against a labeled validation set, plus documents with ambiguous or internally contradictory content, and keep a small stratified random sample of high-confidence extractions to catch novel error patterns.",correct:true,
+  {l:"C",body:"Calibrated field-level confidence and document ambiguity, plus a stratified high-confidence sample.",correct:true,
    why:"Combines the two things the objective requires: targeted routing of likely-wrong records (calibrated confidence + document characteristics) and a stratified sample of the high-confidence pool so new failure modes don't go undetected."},
   {l:"D",body:"Review every extraction from the document types that had the lowest accuracy last quarter.",correct:false,
    why:"Reasonable input to prioritization, but a static per-type rule ignores field-level and per-document signals and never surveils the high-confidence pool."}
@@ -860,7 +864,7 @@ const Q=[
  title:"Overall extraction accuracy is 97%, so leadership wants to drop human review entirely. What must you check first?",
  correct:"A",
  opts:[
-  {l:"A",body:"Break accuracy down by document type and by field — an aggregate can hide a type or field performing far below the mean.",correct:true,
+  {l:"A",body:"Break accuracy down by document type and by field.",correct:true,
    why:"Aggregate metrics mask segment failures: 97% overall is compatible with 99% on the dominant type and 70% on a rarer one that happens to carry the highest-value fields."},
   {l:"B",body:"Confirm the 97% was measured on at least 10,000 documents.",correct:false,
    why:"Sample size matters, but even a huge sample reports the same misleading average. Segmentation is the actual risk here."},
@@ -878,8 +882,8 @@ const Q=[
  opts:[
   {l:"A",body:"Keep the fixed pipeline but add a prioritization step that sorts files by line count first.",correct:false,
    why:"Still a fixed sequence, and file size is a poor proxy for risk. It reorders the same undifferentiated work."},
-  {l:"B",body:"Use dynamic decomposition: first map structure and dependencies, identify high-impact/high-risk areas from what that reveals, then generate a prioritized plan whose subtasks adapt as new dependencies are discovered.",correct:true,
-   why:"Open-ended investigation is the case for adaptive decomposition. Each step's findings determine the next subtasks, so effort concentrates where risk actually is instead of being spread uniformly by a plan written before anything was known."},
+  {l:"B",body:"Dynamic decomposition: map structure, identify high-risk areas, then a plan that adapts.",correct:true,
+   why:"Subtasks are generated from what each step reveals, and change as new dependencies surface. Open-ended investigation is the case for adaptive decomposition. Each step's findings determine the next subtasks, so effort concentrates where risk actually is instead of being spread uniformly by a plan written before anything was known."},
   {l:"C",body:"Split the codebase into ten equal chunks and run the same pipeline on each in parallel.",correct:false,
    why:"Parallelizes the wrong plan. Equal chunks assume uniform importance — the exact assumption that's failing."},
   {l:"D",body:"Write the full test plan up front in plan mode, then execute it exactly as approved.",correct:false,
@@ -895,7 +899,7 @@ const Q=[
    why:"Open-ended diagnosis — each finding redirects the investigation. Textbook dynamic decomposition."},
   {l:"B",body:"\"Research this emerging technology and produce a cited report.\"",correct:false,
    why:"What you find determines what to search next; the subtask set can't be fixed in advance."},
-  {l:"C",body:"\"Review this 14-file pull request for correctness, security, and performance\" — analyze each file locally, then run a cross-file integration pass.",correct:true,
+  {l:"C",body:"\"Review this 14-file pull request\" — each file, then a cross-file integration pass.",correct:true,
    why:"The aspects and the stages are known before you start, and the same steps apply to every file. That predictability is exactly what prompt chaining is for, with the per-file/integration split preventing attention dilution."},
   {l:"D",body:"\"Figure out which of our 40 microservices still depend on the deprecated auth library.\"",correct:false,
    why:"Discovery-driven — each dependency found opens new paths to trace."}
@@ -913,8 +917,8 @@ const Q=[
    why:"Throws away hours of accumulated understanding and will hit the same wall again without a persistence mechanism."},
   {l:"C",body:"Ask the agent to summarize everything it has learned into the conversation and continue.",correct:false,
    why:"An in-context summary still competes with the noise it's summarizing, and progressive summarization is where specific values and names get flattened into vagueness."},
-  {l:"D",body:"Have the agent write key findings to a scratchpad file it re-reads for later questions, delegate verbose investigations to subagents so their output stays out of the main context, and use /compact once discovery output has piled up.",correct:true,
-   why:"The three complementary mechanisms: durable external state (scratchpad) that survives context boundaries, subagent isolation keeping verbose exploration out of the coordinator, and /compact to reclaim what's already accumulated."},
+  {l:"D",body:"Scratchpad file for key findings, subagents for verbose investigations, and /compact.",correct:true,
+   why:"The scratchpad is re-read for later questions; subagent output never enters the main context. The three complementary mechanisms: durable external state (scratchpad) that survives context boundaries, subagent isolation keeping verbose exploration out of the coordinator, and /compact to reclaim what's already accumulated."},
  ],
  principle:"Long exploration needs external memory (scratchpad files), isolation (subagents for verbose digging), and targeted reading — not a bigger window."},
 
@@ -924,7 +928,7 @@ const Q=[
  opts:[
   {l:"A",body:"Increase the retry count on the coordinator so crashes are less likely to matter.",correct:false,
    why:"Reduces crash frequency at best; it does nothing about recovering state when one does happen."},
-  {l:"B",body:"Have each agent export structured state to a known location as it works, and have the coordinator load a manifest on resume and inject the relevant summaries into each agent's initial context.",correct:true,
+  {l:"B",body:"Each agent exports structured state; the coordinator loads a manifest on resume.",correct:true,
    why:"Structured state exports plus a coordinator-loaded manifest is the crash-recovery pattern: work already done is restored as context rather than repeated, and each agent resumes with exactly what it needs."},
   {l:"C",body:"Keep the full conversation history of every agent in one shared log and replay it on resume.",correct:false,
    why:"Replaying raw history reintroduces all the verbose accumulation and can exceed context on resume. Structured summaries beat transcript replay."},
@@ -938,8 +942,8 @@ const Q=[
  title:"You added a powerful MCP tool search_code_index that understands symbols and call graphs, but the agent keeps using the built-in Grep instead. What is the most effective fix?",
  correct:"A",
  opts:[
-  {l:"A",body:"Expand the MCP tool's description to spell out its capabilities and output — symbol resolution, call-graph traversal, cross-file references — and state explicitly when to prefer it over plain text search.",correct:true,
-   why:"Tool descriptions are the model's primary basis for selection. A capable tool with a thin description loses to a familiar built-in; explicit disambiguation guidance ('use this instead of Grep when…') is the targeted fix."},
+  {l:"A",body:"Expand its description to state its capabilities and when to prefer it over Grep.",correct:true,
+   why:"Spell out symbol resolution, call-graph traversal and cross-file references, and the boundary against plain text search. Tool descriptions are the model's primary basis for selection. A capable tool with a thin description loses to a familiar built-in; explicit disambiguation guidance ('use this instead of Grep when…') is the targeted fix."},
   {l:"B",body:"Remove Grep from the agent's allowed tools so it must use the MCP tool.",correct:false,
    why:"Blunt — Grep is still the right choice for literal string searches. Removing capability to force a preference degrades other tasks."},
   {l:"C",body:"Add a system-prompt instruction to always prefer MCP tools over built-ins.",correct:false,
@@ -957,7 +961,7 @@ const Q=[
    why:"Backend implementation detail doesn't help the model decide when to call it. Describe the decision, not the plumbing."},
   {l:"B",body:"A note that the tool is fast and inexpensive.",correct:false,
    why:"Cost/latency rarely disambiguates *which* tool matches the user's intent."},
-  {l:"C",body:"Example queries that should route here, the exact input format expected, edge cases, and an explicit boundary statement contrasting it with the similar tool.",correct:true,
+  {l:"C",body:"Example queries, input format, edge cases, and explicit boundaries.",correct:true,
    why:"These are the four elements that make descriptions disambiguating: concrete use-case examples, input format, edge cases, and an explicit 'not this tool, that one' boundary."},
   {l:"D",body:"A warning that the tool may return errors and should be retried.",correct:false,
    why:"Error handling belongs in structured error responses, not in the selection guidance."}
@@ -971,7 +975,7 @@ const Q=[
  opts:[
   {l:"A",body:"Keep it required and add a prompt instruction: \"never guess a date.\"",correct:false,
    why:"You've created a contradiction — the schema demands a value while the prompt forbids inventing one. The schema constraint wins and fabrication continues."},
-  {l:"B",body:"Make renewal_date optional/nullable, and add a renewal_terms enum including \"not_specified\" and \"unclear\" so absence is representable.",correct:true,
+  {l:"B",body:"Make renewal_date nullable and add enum values \"not_specified\" and \"unclear\".",correct:true,
    why:"The model fabricates because it must satisfy a required field. Making absence expressible — nullable field plus explicit enum values for missing/ambiguous — removes the pressure to invent."},
   {l:"C",body:"Default renewal_date to null in your parsing code when it looks implausible.",correct:false,
    why:"Post-hoc heuristics can't distinguish a fabricated plausible date from a real one, which is precisely why they're dangerous."},
@@ -984,7 +988,7 @@ const Q=[
  title:"Your document_category enum covers six known types, but roughly 8% of documents don't fit any and get force-fit into the closest one. Best schema fix?",
  correct:"A",
  opts:[
-  {l:"A",body:"Add an \"other\" enum value paired with a required-when-other detail string capturing the actual category in free text.",correct:true,
+  {l:"A",body:"Add an \"other\" enum value paired with a detail string.",correct:true,
    why:"The 'other + detail' pattern makes the enum extensible: the model can decline the six buckets honestly, and the detail strings become the data you use to decide which new categories deserve their own enum value."},
   {l:"B",body:"Remove the enum and let the category be a free string.",correct:false,
    why:"Loses the validation and downstream routing that the enum provides for the 92% that do fit."},
@@ -1017,7 +1021,7 @@ const Q=[
  opts:[
   {l:"A",body:"Send all six in one message so Claude has full context.",correct:false,
    why:"Batching independent trivia with interacting design issues dilutes attention on the part that actually needs joint reasoning."},
-  {l:"B",body:"Send the three interacting issues in a single detailed message so they can be solved jointly, and handle the three independent issues sequentially (or in their own separate pass).",correct:true,
+  {l:"B",body:"Interacting issues in one message; independent ones sequentially.",correct:true,
    why:"The rule keys off interaction: issues whose fixes affect each other must be considered together or you get whack-a-mole; independent issues are cleaner to iterate on one at a time with a tight feedback loop."},
   {l:"C",body:"Send all six one at a time in priority order.",correct:false,
    why:"Fixing the caching issues serially means each fix invalidates the last — the classic thrash when interacting problems are split."},
@@ -1036,8 +1040,8 @@ const Q=[
    why:"Test-driven iteration is a strong technique, but you can't write tests for failure modes you haven't identified yet. It comes after the questions."},
   {l:"C",body:"Use plan mode and approve the plan.",correct:false,
    why:"Plan mode structures the work; it doesn't systematically interrogate *you* for the domain decisions the plan depends on."},
-  {l:"D",body:"Use the interview pattern — have Claude ask you questions (clock skew, partition behavior, fail-open vs fail-closed, counter storage) before implementing.",correct:true,
-   why:"The interview pattern is specifically for unfamiliar domains: it surfaces design considerations the developer hasn't anticipated, so decisions are made deliberately rather than defaulted silently in generated code."}
+  {l:"D",body:"Use the interview pattern — have Claude ask you questions first.",correct:true,
+   why:"Clock skew, partition behavior, fail-open vs fail-closed, counter storage. The interview pattern is specifically for unfamiliar domains: it surfaces design considerations the developer hasn't anticipated, so decisions are made deliberately rather than defaulted silently in generated code."}
  ],
  principle:"Unfamiliar domain → interview pattern first (Claude asks, you decide), then test-driven iteration, then implementation."},
 
@@ -1046,7 +1050,7 @@ const Q=[
  title:"Dates arrive as \"03/04/2026\", \"4 March 2026\", and \"2026-03-04\"; amounts as \"$1,200.00\", \"1200\", and \"1.200,00 EUR\". Your schema is strict but downstream comparisons still break. What's missing?",
  correct:"A",
  opts:[
-  {l:"A",body:"Explicit format normalization rules in the prompt (ISO 8601 for dates, decimal number plus a separate ISO currency code) alongside the strict schema, with a couple of examples of the ambiguous cases.",correct:true,
+  {l:"A",body:"Explicit format normalization rules in the prompt, with examples.",correct:true,
    why:"A schema constrains *type*, not *format*. Normalization instructions in the prompt — plus examples resolving genuinely ambiguous inputs like 03/04 — are what produce consistent, comparable values."},
   {l:"B",body:"Type every field as string and normalize in downstream code.",correct:false,
    why:"Pushes ambiguity you can't resolve downstream — code can't know whether 03/04 is March 4 or April 3, but the model has the surrounding document context to disambiguate."},
@@ -1063,7 +1067,7 @@ const Q=[
  opts:[
   {l:"A",body:"Fine-tune a model on your document corpus.",correct:false,
    why:"Heavy machinery for a gap that few-shot coverage closes — the over-engineered option."},
-  {l:"B",body:"Add few-shot examples representing the newer layouts, chosen to cover the structural variety rather than repeating similar cases.",correct:true,
+  {l:"B",body:"Add few-shot examples covering the newer layouts' structural variety.",correct:true,
    why:"The gap tracks example coverage exactly. Adding examples spanning the varied layouts is the proportionate, high-leverage fix — and diversity of examples matters more than count."},
   {l:"C",body:"Add ten more examples of the two layouts that already work.",correct:false,
    why:"Reinforces what's already right and does nothing for the failing layouts."},
@@ -1081,8 +1085,8 @@ const Q=[
    why:"Floods context with data the agent mostly doesn't need — trading exploratory calls for context exhaustion."},
   {l:"B",body:"Increase the agent's iteration limit so it has room to explore.",correct:false,
    why:"Permits the waste instead of removing the need for it."},
-  {l:"C",body:"Expose content catalogs as MCP resources — issue summaries, documentation hierarchies, database schemas — so the agent can see what's available without exploratory tool calls.",correct:true,
-   why:"MCP resources exist for exactly this: giving the agent visibility into available content up front, so it goes straight to the relevant item instead of probing to find out what exists."},
+  {l:"C",body:"Expose content catalogs as MCP resources.",correct:true,
+   why:"Issue summaries, documentation hierarchies, database schemas. MCP resources exist for exactly this: giving the agent visibility into available content up front, so it goes straight to the relevant item instead of probing to find out what exists."},
   {l:"D",body:"Cache tool results between sessions.",correct:false,
    why:"Helps repeat work; the agent still has to explore the first time and after any change."}
  ],
@@ -1114,10 +1118,208 @@ const Q=[
    why:"Prior conclusions about the 6 changed files are now stale and will propagate silently."},
   {l:"C",body:"Resume and ask the agent to re-read anything it thinks might have changed.",correct:false,
    why:"Delegates a determination the agent can't make — it has no view of what changed on disk since it last ran. Detect changes in code, not by asking."},
-  {l:"D",body:"Resume the session, detect the changed files externally, inject a summary of prior findings plus the specific list of what changed, and re-analyze only those 6.",correct:true,
-   why:"Targeted re-analysis of changed files plus context injection restores accurate state without repeating the 34 files that are still valid."},
+  {l:"D",body:"Resume, inject the list of changed files, and re-analyze only those 6.",correct:true,
+   why:"Change detection happens outside the model, and prior findings are injected alongside the change list. Targeted re-analysis of changed files plus context injection restores accurate state without repeating the 34 files that are still valid."},
  ],
  principle:"Resumption = keep the prior findings, detect changes deterministically outside the model, inject them as context, and re-analyze only what actually changed."},
+/* --- OBJ: Fork vs resume (session state) --- */
+{d:1,focus:true,added:"9/12",obj:"Fork vs resume",scenario:"Developer Productivity with Claude",
+ title:"After an expensive analysis of a legacy service, you want to evaluate two refactoring approaches — extracting a service layer vs. inlining and simplifying — and compare the results. What session strategy fits?",
+ correct:"C",
+ opts:[
+  {l:"A",body:"Continue the existing session and ask for both approaches in sequence, then compare.",correct:false,
+   why:"The second approach is developed in a context that already contains the first, so it anchors on it. You get a variation on approach 1, not an independent alternative."},
+  {l:"B",body:"Start two fresh sessions and re-run the analysis in each so both have accurate context.",correct:false,
+   why:"Pays for the expensive shared analysis twice, and the two analyses may differ slightly — so you're no longer comparing approaches from an identical baseline."},
+  {l:"C",body:"Use fork_session at the point the analysis completes, creating two independent branches from the shared baseline.",correct:true,
+   why:"Forking is exactly this case: the costly shared work happens once, and each branch explores a divergent approach without contaminating the other. Both reason from an identical understanding, which is what makes the comparison meaningful."},
+  {l:"D",body:"Resume the analysis session twice with different prompts.",correct:false,
+   why:"Resuming the same named session continues one timeline — the second resume inherits whatever the first one added. Resumption continues; forking branches."}
+ ],
+ principle:"fork_session = independent branches from a shared baseline, for comparing divergent approaches. Resume = one timeline continuing. Don't confuse branching with continuing."},
+
+{d:1,focus:true,added:"9/12",obj:"Fork vs resume",scenario:"Code Generation with Claude Code",
+ title:"You resume a named session from last week. In the meantime the team merged a large refactor touching most of the files the session had analyzed, and several of its earlier conclusions no longer hold. Best move?",
+ correct:"B",
+ opts:[
+  {l:"A",body:"Resume and tell the agent to disregard anything that may have changed.",correct:false,
+   why:"A blanket disclaimer doesn't remove the stale tool results from context — the agent still has last week's file contents and will keep reasoning from them."},
+  {l:"B",body:"Start fresh and inject a structured summary of what remains valid.",correct:true,
+   why:"When most of the prior tool results are now wrong, resumption carries more misinformation than value. A summary you author controls exactly what carries forward, with nothing stale attached."},
+  {l:"C",body:"Resume and list every changed file so the agent re-reads them.",correct:false,
+   why:"Targeted re-analysis is right when a few files changed. When 'most' changed, you're re-reading nearly everything while still dragging the old results along — worse than starting clean."},
+  {l:"D",body:"Fork the old session so the stale branch is preserved for reference.",correct:false,
+   why:"Forking copies the stale context into both branches. It's for exploring divergent approaches, not for escaping outdated state."}
+ ],
+ principle:"Prior context mostly valid → resume with a targeted change list. Prior context mostly invalid → fresh session seeded with a structured summary."},
+
+{d:1,focus:true,added:"9/12",obj:"Fork vs resume",scenario:"Multi-Agent Research System",
+ title:"Which statement correctly distinguishes --resume from fork_session?",
+ correct:"D",
+ opts:[
+  {l:"A",body:"--resume restores prior context; fork_session restores prior context and also re-runs the prior tool calls to refresh it.",correct:false,
+   why:"Forking doesn't re-execute anything. Nothing in either mechanism refreshes stale results — that's work you do explicitly."},
+  {l:"B",body:"--resume is for the same machine; fork_session is for transferring a session to another machine.",correct:false,
+   why:"Neither is about machine portability. The distinction is timeline shape, not location."},
+  {l:"C",body:"--resume keeps one branch and discards history; fork_session keeps full history.",correct:false,
+   why:"Resuming a named session restores its history — it doesn't discard it."},
+  {l:"D",body:"--resume continues one timeline; fork_session splits it into independent branches.",correct:true,
+   why:"Forked branches share everything up to the fork point and nothing after it. The precise distinction. Resume = continuation of one conversation. Fork = divergence: common ancestry, then isolation, so branches can't influence each other."}
+ ],
+ principle:"Resume continues; fork branches. Both inherit prior context as-is — neither one refreshes anything that went stale while you were away."},
+
+{d:1,focus:true,added:"9/12",obj:"Fork vs resume",scenario:"Developer Productivity with Claude",
+ title:"You resume a codebase-exploration session and want it to correctly re-analyze the three modules that changed. What is the reliable way to make that happen?",
+ correct:"A",
+ opts:[
+  {l:"A",body:"Detect the changed files outside the model and name them in the resume prompt.",correct:true,
+   why:"git diff, mtimes, or CI metadata — whatever your tooling already knows. Change detection is deterministic work that belongs in your tooling. The agent has no visibility into what happened on disk between sessions, so it must be told precisely what to re-read."},
+  {l:"B",body:"Ask the agent to re-read anything it believes may have changed since its last analysis.",correct:false,
+   why:"It cannot know. This delegates a determination the model has no information to make, and it will either re-read nothing or guess."},
+  {l:"C",body:"Ask the agent to re-read every file it touched, to be safe.",correct:false,
+   why:"Safe but wasteful — it discards the benefit of resuming and costs nearly as much as starting over."},
+  {l:"D",body:"Clear the session's tool results but keep the conversation, so it re-fetches on demand.",correct:false,
+   why:"Not a mechanism resumption offers, and the conclusions drawn from those results would still be in the history unqualified."}
+ ],
+ principle:"Detect changes deterministically outside the model, inject the specific list, re-analyze only those files. Never ask the agent what it thinks changed."},
+/* --- OBJ: Built-in tool selection (Grep / Glob / Read / Edit) --- */
+{d:2,focus:true,added:"9/12",obj:"Built-in tools",scenario:"Developer Productivity with Claude",
+ title:"You need to find every caller of processRefund() across an unfamiliar repo, then understand how three of them work. What is the correct tool sequence?",
+ correct:"B",
+ opts:[
+  {l:"A",body:"Glob for **/*.ts to enumerate source files, then Read each one until you've found the callers.",correct:false,
+   why:"Glob matches file PATHS, not contents — it can't find a function name. Reading every file to search it wastes enormous context on files that don't mention it at all."},
+  {l:"B",body:"Grep for processRefund to locate the call sites, then Read only the specific regions of the three files you care about.",correct:true,
+   why:"Grep is the content-search tool: it finds patterns inside files — function names, error strings, import statements. Read then loads only what the search identified. This is the incremental-understanding pattern: locate first, load second."},
+  {l:"C",body:"Read the repository's entry point and follow imports until you encounter each caller.",correct:false,
+   why:"Works eventually but traverses far more than needed, and misses callers not reachable from that entry point. Search beats traversal when you know what you're looking for."},
+  {l:"D",body:"Use Bash with a find command, then Read the results.",correct:false,
+   why:"find matches paths like Glob does, not contents — and reaching for Bash when a purpose-built tool exists is the over-engineered option."}
+ ],
+ principle:"Grep = search file CONTENTS (function names, error messages, imports). Glob = match file PATHS by name/extension (**/*.test.tsx). Read = load what the search found. Locate, then load."},
+
+{d:2,focus:true,added:"9/12",obj:"Built-in tools",scenario:"Code Generation with Claude Code",
+ title:"An Edit call fails because the anchor text you targeted appears four times in the file. What is the correct recovery?",
+ correct:"C",
+ opts:[
+  {l:"A",body:"Retry the same Edit — non-determinism means it may match correctly next time.",correct:false,
+   why:"Edit requires a UNIQUE text match by design. A non-unique anchor fails deterministically; retrying an unchanged call against a structural constraint never succeeds."},
+  {l:"B",body:"Use Bash with sed to perform the replacement instead.",correct:false,
+   why:"Bypasses the file tools for an operation they handle, and a blind sed on an ambiguous pattern replaces all four occurrences."},
+  {l:"C",body:"Widen the anchor until it's unique; if none exists, fall back to Read + Write.",correct:true,
+   why:"Widening the anchor is the cheap fix. When the file genuinely has no unique anchor, Read + Write is the documented fallback: load the whole file, modify it, write it back reliably."},
+  {l:"D",body:"Delete the file and recreate it from scratch with Write.",correct:false,
+   why:"Discards content you haven't read and risks losing anything you didn't reconstruct. Read first, then Write."}
+ ],
+ principle:"Edit needs a unique text match. Non-unique → widen the anchor; no unique anchor available → Read + Write as the fallback for reliable modification."},
+
+{d:5,focus:true,added:"9/12",obj:"Built-in tools",scenario:"Developer Productivity with Claude",
+ title:"You're starting on a 200k-line codebase you've never seen. Which approach builds understanding without exhausting context?",
+ correct:"D",
+ opts:[
+  {l:"A",body:"Read every file in src/ once so the model has complete context, then answer questions.",correct:false,
+   why:"Exhausts the window on material that is mostly irrelevant to the task, and buries the parts that matter in noise."},
+  {l:"B",body:"Read the README and package manifest, then rely on the model's knowledge of typical patterns for that framework.",correct:false,
+   why:"'Typical patterns' instead of the actual code is precisely the degradation symptom the exam flags — it produces confident, wrong answers about this specific codebase."},
+  {l:"C",body:"Glob every file path first to build a full map, then Read in alphabetical order.",correct:false,
+   why:"A path listing is cheap and useful, but alphabetical reading is an undirected sweep with the same exhaustion problem."},
+  {l:"D",body:"Grep entry points, Read only those regions, follow imports as needed, scratchpad findings.",correct:true,
+   why:"Incremental understanding: search to locate, read narrowly, expand only along paths the task actually needs. The scratchpad persists findings past context boundaries and subagent delegation keeps verbose output out of the main session."},
+ ],
+ principle:"Build understanding incrementally — Grep to find entry points, Read to follow specific flows — rather than loading everything upfront. Persist findings externally; isolate verbose discovery."},
+
+/* --- OBJ: MCP loading & discovery --- */
+{d:2,focus:true,added:"9/12",obj:"MCP loading",scenario:"Developer Productivity with Claude",
+ title:"Your team's agent now connects six MCP servers. A developer asks why every request has gotten more expensive even when none of those tools are called. What is the correct explanation?",
+ correct:"A",
+ opts:[
+  {l:"A",body:"All configured servers' tools are discovered at connection time and described every turn.",correct:true,
+   why:"Each tool's name, description and schema sits in the request whether or not it is invoked. MCP tool discovery happens at connection time, and the resulting definitions are part of the request context for every turn. Rich descriptions improve selection but are not free — server sprawl is a real, ongoing token cost."},
+  {l:"B",body:"MCP servers poll for updates in the background, adding overhead to each request.",correct:false,
+   why:"Not how the cost arises. The overhead is the tool definitions occupying context, not background polling."},
+  {l:"C",body:"Each configured server injects its documentation into the system prompt on first use only.",correct:false,
+   why:"'On first use only' is wrong — the definitions are present from connection, on every turn, not lazily loaded when a tool is first called."},
+  {l:"D",body:"Unused tools are stripped automatically, so the cost must come from something else.",correct:false,
+   why:"There's no automatic stripping; the model can only choose among tools it can see, which means they must all be described."}
+ ],
+ principle:"MCP tools are discovered at connection time and all configured servers' tools are available — and described — simultaneously. Scope servers deliberately; more servers means more context in every request."},
+
+{d:2,focus:true,added:"9/12",obj:"MCP loading",scenario:"Multi-Agent Research System",
+ title:"When should content be exposed as an MCP resource rather than as an MCP tool?",
+ correct:"B",
+ opts:[
+  {l:"A",body:"Whenever the content is read-only — tools are for writes, resources are for reads.",correct:false,
+   why:"Plenty of legitimate tools are read-only (lookup_order, search). The split isn't read vs write."},
+  {l:"B",body:"When the agent needs visibility into what content EXISTS, to skip discovery calls.",correct:true,
+   why:"Catalogs of issues, documentation hierarchies, database schemas. Resources expose catalogs; tools perform actions and retrieval. Giving the agent the catalog up front removes the round-trips it would otherwise spend finding out what's there before it can ask for anything specific."},
+  {l:"C",body:"When the content is too large to return from a tool call.",correct:false,
+   why:"Size isn't the criterion, and resources aren't a workaround for large payloads — that's what pagination and field trimming are for."},
+  {l:"D",body:"When you want the content loaded into every request automatically.",correct:false,
+   why:"Describes always-on context like CLAUDE.md, not the resource mechanism."}
+ ],
+ principle:"Resources = what exists (catalogs, schemas, hierarchies, discoverability). Tools = what to do (retrieve, act). Exposing catalogs as resources removes exploratory discovery calls."},
+
+/* --- OBJ: Retry vs surface --- */
+{d:2,focus:true,added:"9/12",obj:"Retry vs surface",scenario:"Customer Support Resolution Agent",
+ title:"An MCP tool call fails. Which failure should the agent retry locally, and which should be surfaced to the coordinator or the user?",
+ correct:"C",
+ opts:[
+  {l:"A",body:"Retry everything up to three times, then surface whatever still fails.",correct:false,
+   why:"Blind retry wastes time on business and permission failures that are deterministic — the refund really does exceed the policy limit, and it will on attempt three too."},
+  {l:"B",body:"Surface everything immediately; the coordinator is better positioned to decide.",correct:false,
+   why:"Escalates transient blips — a timeout, a momentarily unavailable service — that the agent could have absorbed silently. It floods the coordinator with noise."},
+  {l:"C",body:"Retry transient and validation failures; surface business and permission failures.",correct:true,
+   why:"Surfaced failures carry isRetryable:false and a message explaining what to do instead. The error category determines the response. Transient → retry, it may well succeed. Validation → retry with corrected input. Business/permission → deterministic refusal; retrying changes nothing, so the caller needs a structured, actionable explanation."},
+  {l:"D",body:"Retry only if the error message contains the word 'temporary'.",correct:false,
+   why:"Parsing natural-language error text to make a control decision — the same anti-pattern as scanning text for loop termination. Use a structured errorCategory field."}
+ ],
+ principle:"Return errorCategory (transient / validation / business / permission) + isRetryable + a human-readable message. The category drives the decision — never a keyword scan of the message, never blanket retry, never blanket escalation."},
+
+{d:5,focus:true,added:"9/12",obj:"Retry vs surface",scenario:"Multi-Agent Research System",
+ title:"A subagent's only source for one section of the report returns a 403 after several attempts. What should it report back?",
+ correct:"D",
+ opts:[
+  {l:"A",body:"An empty result, so the coordinator can proceed with what the other subagents found.",correct:false,
+   why:"Silent error suppression — an empty result is indistinguishable from 'searched and found nothing', so the gap enters the final report unflagged."},
+  {l:"B",body:"Terminate the whole workflow so nothing is published on incomplete data.",correct:false,
+   why:"Killing the run on one recoverable failure is the opposite over-correction. The other sections are valid and the coordinator can decide how to handle the gap."},
+  {l:"C",body:"A generic \"an error occurred while researching this section\" message.",correct:false,
+   why:"Gives the coordinator nothing to act on — it can't tell whether to retry, try an alternate source, or proceed with partial results."},
+  {l:"D",body:"A structured error: permission category, not retryable, partials, alternatives.",correct:true,
+   why:"Structured error context is what lets a coordinator recover intelligently — choosing between an alternate source, proceeding with annotated partial results, or escalating. Also note: an access failure is not the same as an empty result, and the distinction must survive."}
+ ],
+ principle:"Structured errors carry type, recoverability, what was attempted, partial results, and alternatives. Never suppress as success, never kill the workflow, never return a generic message."},
+
+/* --- OBJ: Plan vs direct vs interview --- */
+{d:3,focus:true,added:"9/12",obj:"Plan vs direct vs interview",scenario:"Code Generation with Claude Code",
+ title:"Match the approach to the task: (i) a single-file bug fix with a clear stack trace, (ii) migrating a library across 45+ files with two viable integration strategies, (iii) building a caching layer in a domain you don't know well.",
+ correct:"B",
+ opts:[
+  {l:"A",body:"(i) plan mode, (ii) plan mode, (iii) plan mode — planning never hurts.",correct:false,
+   why:"Plan mode on a well-scoped single-file fix is pure overhead, and for the unfamiliar domain it structures work without first surfacing the decisions you didn't know you had to make."},
+  {l:"B",body:"(i) direct execution, (ii) plan mode, (iii) interview pattern first, then plan or execute.",correct:true,
+   why:"Scope and known complexity decide it. A clear single-file fix is direct. Multi-file with competing approaches and architectural consequences is plan mode — the complexity is already stated, so you don't wait for it to 'emerge'. Unfamiliar domain means the gap is your own requirements, which the interview pattern surfaces before any plan is worth writing."},
+  {l:"C",body:"(i) direct execution, (ii) direct execution with careful review, (iii) plan mode.",correct:false,
+   why:"A 45-file migration with two valid strategies is the canonical plan-mode case — executing directly commits you to one approach before anyone reviews the tradeoff."},
+  {l:"D",body:"(i) interview pattern, (ii) plan mode, (iii) direct execution.",correct:false,
+   why:"Inverted on both ends: nothing to interview about when the stack trace tells you the fix, and diving straight into code is worst in the domain you understand least."}
+ ],
+ principle:"Direct execution: simple, well-scoped, reversible. Plan mode: multi-file, multiple valid approaches, architectural, needs stakeholder review — when complexity is already known. Interview pattern: when YOU don't yet know the design questions."},
+
+{d:3,focus:true,added:"9/12",obj:"Plan vs direct vs interview",scenario:"Code Generation with Claude Code",
+ title:"During a multi-phase migration, the discovery phase is producing huge volumes of file listings and search output that crowd out the planning discussion. What is the intended mechanism?",
+ correct:"A",
+ opts:[
+  {l:"A",body:"Delegate discovery to the Explore subagent so only a summary returns.",correct:true,
+   why:"The Explore subagent exists for exactly this: isolating verbose discovery so the main session keeps its context for coordination and planning. Same principle as subagent isolation generally, applied to the exploration phase."},
+  {l:"B",body:"Run /compact after every discovery step.",correct:false,
+   why:"/compact reclaims context after the fact and is a legitimate tool, but it's remediation — it still let the noise in first and it compresses indiscriminately."},
+  {l:"C",body:"Switch off plan mode so the session spends less time discussing.",correct:false,
+   why:"Removes the planning you need for a multi-phase migration; the discussion isn't the problem, the discovery volume is."},
+  {l:"D",body:"Start a new session for each discovery step.",correct:false,
+   why:"Fragments the work and loses the thread between phases, with no mechanism carrying findings forward."}
+ ],
+ principle:"Plan mode for investigation and design, then direct execution for the implementation it produced — with the Explore subagent absorbing verbose discovery so the main context stays coherent."},
 
 /* --- Two mixed synthesis questions across weak areas --- */
 {d:3,focus:true,obj:"Config mechanism choice",scenario:"Code Generation with Claude Code",
@@ -1143,8 +1345,8 @@ const Q=[
    why:"Progressive summarization compounds — each pass loses a little more, no matter how the instruction is phrased."},
   {l:"B",body:"Stop summarizing and keep the full transcript.",correct:false,
    why:"Runs out of context on long sessions and buries the important facts in verbose tool output anyway."},
-  {l:"C",body:"Extract transactional facts (amounts, order numbers, dates, statuses) into a persistent \"case facts\" block included verbatim in every prompt, outside the summarized history, and trim verbose tool outputs to relevant fields.",correct:true,
-   why:"Separates the two content types: exact values live in a structured layer that is never summarized, while narrative history can be compressed freely. Trimming 40-field order lookups to the 5 relevant fields stops the accumulation that forces summarization."},
+  {l:"C",body:"Put transactional facts in a persistent \"case facts\" block, and trim tool outputs.",correct:true,
+   why:"Amounts, order numbers, dates and statuses appear verbatim in every prompt, outside the summarized history. Separates the two content types: exact values live in a structured layer that is never summarized, while narrative history can be compressed freely. Trimming 40-field order lookups to the 5 relevant fields stops the accumulation that forces summarization."},
   {l:"D",body:"Store the facts in a database and have the agent query them when needed.",correct:false,
    why:"Reasonable engineering but adds a tool call and a chance the agent doesn't think to query. Facts this critical belong in every prompt."}
  ],
@@ -1166,7 +1368,7 @@ Q.forEach((q,i)=>{
       </div>
     </div>`).join('');
   const card=el(`
-    <div class="card" data-d="${q.d}" data-focus="${q.focus?1:0}" data-i="${i}">
+    <div class="card" data-d="${q.d}" data-focus="${q.focus?1:0}" data-new="${q.added?1:0}" data-i="${i}">
       <div class="card-head">
         <div class="qnum">${i+1}</div>
         <div class="qtitle">${q.title}
@@ -1174,6 +1376,7 @@ Q.forEach((q,i)=>{
             <span class="badge d${q.d}">Domain ${q.d}</span>
             <span class="badge ghost">${q.scenario}</span>
             ${q.focus?`<span class="badge focus">★ ${q.obj}</span>`:''}
+            ${q.added?`<span class="badge new">New · ${q.added}</span>`:''}
           </div>
         </div>
       </div>
@@ -1244,7 +1447,7 @@ chips.forEach(chip=>{
     chips.forEach(c=>c.classList.remove('on'));chip.classList.add('on');
     const d=chip.dataset.d;let shown=0;
     document.querySelectorAll('#list .card').forEach(card=>{
-      const vis=(d==='all'||(d==='focus'?card.dataset.focus==='1':card.dataset.d===d));
+      const vis=(d==='all'||(d==='focus'?card.dataset.focus==='1':d==='new'?card.dataset.new==='1':card.dataset.d===d));
       card.style.display=vis?'':'none';if(vis)shown++;
     });
     document.getElementById('empty').style.display=shown?'none':'block';
