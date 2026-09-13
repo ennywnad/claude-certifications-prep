@@ -34,12 +34,14 @@
   .cert h3{margin:0 0 4px;font-size:18px}
   .cert p.blurb{margin:0 0 16px;color:var(--muted);font-size:14.5px}
 
-  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:12px}
   .card{display:block;text-decoration:none;color:inherit;background:var(--bg);
     border:1px solid var(--line);border-radius:12px;padding:14px 16px;transition:.15s}
   .card:hover{border-color:var(--accent);background:var(--accent-soft);transform:translateY(-1px)}
   .card b{display:block;font-size:15px;margin-bottom:3px}
   .card span{color:var(--muted);font-size:13.5px}
+  .tag{font-style:normal;font-size:11px;font-weight:700;letter-spacing:.04em;vertical-align:2px;
+    margin-left:6px;padding:1px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
 
   footer{margin-top:34px;color:var(--muted);font-size:13.5px;text-align:center}
 </style>
@@ -54,15 +56,19 @@
   </header>
 
   <h2 class="section-title">Available materials</h2>
-  <p class="section-lead">Everything runs in the browser. Nothing to install, no answers stored.</p>
+  <p class="section-lead">Everything runs in the browser. Nothing to install, nothing uploaded.</p>
 
   <div class="cert">
     <h3>Claude Certified Architect — Foundations</h3>
     <p class="blurb">60 questions · 120 minutes · 720/1000 to pass · 5 content domains.</p>
     <div class="cards">
+      <a class="card" href="architect-foundations/study-guide-v2.html">
+        <b>Visual Study Guide <em class="tag">v2</em></b>
+        <span>Interactive diagrams, triage flows, drills and progress tracking</span>
+      </a>
       <a class="card" href="architect-foundations/study-guide.html">
-        <b>Visual Study Guide</b>
-        <span>Domain-by-domain breakdown with worked reasoning</span>
+        <b>Classic Study Guide</b>
+        <span>The original single-page guide with worked reasoning</span>
       </a>
       <a class="card" href="architect-foundations/practice-quiz.html">
         <b>Practice Quiz</b>

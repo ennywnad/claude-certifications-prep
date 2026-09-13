@@ -9,9 +9,10 @@ the GitHub Pages links above/below to actually read them.
 
 ## Certifications
 
-### [Architect — Foundations](https://ennywnad.github.io/claude-certifications-prep/architect-foundations/study-guide.html)
+### [Architect — Foundations](https://ennywnad.github.io/claude-certifications-prep/architect-foundations/study-guide-v2.html)
 
-- [Visual study guide](https://ennywnad.github.io/claude-certifications-prep/architect-foundations/study-guide.html)
+- [Visual study guide v2](https://ennywnad.github.io/claude-certifications-prep/architect-foundations/study-guide-v2.html)
+- [Classic study guide](https://ennywnad.github.io/claude-certifications-prep/architect-foundations/study-guide.html)
 - [Practice quiz](https://ennywnad.github.io/claude-certifications-prep/architect-foundations/practice-quiz.html)
 - [Official exam guide (PDF)](https://ennywnad.github.io/claude-certifications-prep/architect-foundations/source/exam-guide.pdf)
 
