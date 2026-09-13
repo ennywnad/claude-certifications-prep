@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architect Foundations · Visual Study Guide v2</title>
+<script src="guide-data.js"></script>
+<script src="diagrams.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#f4f4f7;color:#191b22;font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:oklch(0.5 0.16 268);text-decoration:none}
+  a:hover{color:oklch(0.42 0.17 268);text-decoration:underline}
+  code{font-family:'IBM Plex Mono',Menlo,Consolas,monospace;font-size:0.9em;background:#eeeff4;padding:1px 5px;border-radius:4px}
+  b,strong{font-weight:600}
+  ::selection{background:oklch(0.86 0.07 268)}
+  #side::-webkit-scrollbar,#rail::-webkit-scrollbar{width:8px}
+  #side::-webkit-scrollbar-thumb,#rail::-webkit-scrollbar-thumb{background:#dcdee6;border-radius:8px}
+  @media(max-width:1180px){#rail{flex:0 0 280px !important;width:280px !important}}
+  @media(max-width:980px){
+    #shell{display:block !important}
+    #side{position:static !important;width:auto !important;height:auto !important;border-right:none !important;border-bottom:1px solid #e2e3ea !important;padding:12px 14px 10px !important}
+    #brand{margin-bottom:12px !important}
+    #sidenav{flex-direction:row !important;overflow-x:auto;gap:6px !important;margin-bottom:10px !important;padding-bottom:3px}
+    #sidenav button{flex:0 0 auto;white-space:nowrap;width:auto !important}
+    #domblock{margin-bottom:0 !important}
+    #domlist{flex-direction:row !important;overflow-x:auto;padding-bottom:3px}
+    #domlist button{flex:0 0 auto;white-space:nowrap;width:auto !important}
+    #progblock,#linkblock{display:none !important}
+    #main{padding:18px 16px 72px !important;max-width:none !important}
+    #rail{position:static !important;width:auto !important;flex:none !important;height:auto !important;border-left:none !important;border-top:1px solid #e2e3ea !important;background:#fff !important}
+    [data-tri]{grid-template-columns:minmax(0,1fr) !important}
+    [data-tri-arrow]{display:none !important}
+    [data-hero]{padding:20px 18px !important}
+    [data-herofacts]{gap:8px !important}
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<template id="__bundler_thumbnail"><svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="120" rx="18" fill="#191b22"></rect><rect x="36" y="34" width="48" height="6" rx="3" fill="#f4f4f7"></rect><rect x="36" y="50" width="48" height="6" rx="3" fill="oklch(0.55 0.14 250)"></rect><rect x="36" y="66" width="30" height="6" rx="3" fill="oklch(0.5 0.12 165)"></rect><rect x="36" y="82" width="38" height="6" rx="3" fill="oklch(0.55 0.15 25)"></rect></svg></template>
+
+<div id="shell" style="display:flex;align-items:flex-start;min-height:100vh;background:#f4f4f7">
+
+  <aside id="side" style="flex:0 0 244px;width:244px;position:sticky;top:0;height:100vh;overflow-y:auto;background:#fff;border-right:1px solid #e2e3ea;padding:22px 16px 32px">
+    <div id="sidestack">
+      <div id="brand" style="margin-bottom:20px">
+        <div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#5f6572;font-weight:600">Claude Certified Architect</div>
+        <div style="font-family:'Source Serif 4',Georgia,serif;font-size:19px;font-weight:700;line-height:1.2;margin-top:4px">Foundations</div>
+        <div style="font-size:11.5px;color:#6c7280;margin-top:2px">Visual study guide <span style="color:oklch(0.5 0.16 268);font-weight:600">v2</span></div>
+      </div>
+
+      <nav id="sidenav" style="display:flex;flex-direction:column;gap:2px;margin-bottom:22px">
+        <sc-for list="{{ nav }}" as="item" hint-placeholder-count="8">
+          <button onClick="{{ item.go }}" style="{{ item.style }}" style-hover="background:#f1f2f7">
+            <span style="flex:1;text-align:left">{{ item.label }}</span>
+            <span style="{{ item.countStyle }}">{{ item.count }}</span>
+          </button>
+        </sc-for>
+      </nav>
+
+      <div id="domblock" style="margin-bottom:20px">
+        <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#5f6572;font-weight:600;margin-bottom:8px">Domains</div>
+        <div id="domlist" style="display:flex;flex-direction:column;gap:3px">
+          <sc-for list="{{ domainNav }}" as="d" hint-placeholder-count="6">
+            <button onClick="{{ d.go }}" style="{{ d.style }}" style-hover="background:#f1f2f7">
+              <span style="{{ d.dot }}"></span>
+              <span style="flex:1;text-align:left;min-width:0">{{ d.label }}</span>
+              <span style="font-size:10.5px;color:#5f6572;font-variant-numeric:tabular-nums">{{ d.count }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div id="progblock" style="border-top:1px solid #eceef3;padding-top:16px">
+        <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#5f6572;font-weight:600;margin-bottom:10px">Your progress</div>
+        <div style="font-size:12.5px;color:#4b5160;margin-bottom:8px">{{ progressLabel }}</div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <sc-for list="{{ progressBars }}" as="p" hint-placeholder-count="5">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:#6c7280;margin-bottom:3px">
+                <span>{{ p.label }}</span><span style="font-variant-numeric:tabular-nums">{{ p.pct }}</span>
+              </div>
+              <div style="height:5px;border-radius:99px;background:#eceef3;overflow:hidden">
+                <div style="{{ p.fill }}"></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <button onClick="{{ resetProgress }}" style="margin-top:14px;background:none;border:none;padding:0;font:inherit;font-size:11px;color:#5f6572;cursor:pointer;text-decoration:underline">Reset ratings</button>
+      </div>
+
+      <div id="linkblock" style="border-top:1px solid #eceef3;margin-top:18px;padding-top:14px;display:flex;flex-direction:column;gap:6px;font-size:11.5px">
+        <a href="../index.html">← All certifications</a>
+        <a href="../architect-foundations/practice-quiz.html">Practice quiz →</a>
+        <a href="../architect-foundations/study-guide.html">Original guide (v1) →</a>
+        <a href="../architect-foundations/source/exam-guide.pdf">Official exam guide (PDF) →</a>
+      </div>
+    </div>
+  </aside>
+
+  <main id="main" style="flex:1 1 auto;min-width:0;max-width:940px;padding:30px 34px 110px">
+
+    <sc-if value="{{ isQuestions }}" hint-placeholder-val="{{ true }}">
+      <div data-hero="1" style="background:#fff;border:1px solid #e2e3ea;border-radius:16px;padding:26px 28px;margin-bottom:22px;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,oklch(0.55 0.15 25),oklch(0.55 0.14 250),oklch(0.55 0.13 95),oklch(0.55 0.15 310),oklch(0.52 0.12 165))"></div>
+        <h1 style="font-family:'Source Serif 4',Georgia,serif;font-size:29px;font-weight:700;letter-spacing:-.015em;margin:6px 0 6px;line-height:1.15">Reason to the answer, don't recall it</h1>
+        <p style="margin:0 0 18px;font-size:14.5px;color:#4b5160;max-width:62ch;line-height:1.6;text-wrap:pretty">The single correct option is rarely the hard part. Every distractor here is written to look right to someone with partial knowledge — and they fail for the same handful of reasons. Learn those reasons and you can reason to the answer on a question you have never seen.</p>
+        <div data-herofacts="1" style="display:flex;flex-wrap:wrap;gap:10px">
+          <sc-for list="{{ facts }}" as="f" hint-placeholder-count="6">
+            <div style="border:1px solid #e6e7ee;border-radius:10px;padding:8px 12px;background:#fafafc">
+              <div style="font-family:'Source Serif 4',Georgia,serif;font-size:16px;font-weight:700;line-height:1.25;white-space:nowrap">{{ f.v }}</div>
+              <div style="font-size:11px;color:#6c7280;margin-top:2px">{{ f.k }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="margin-bottom:16px">
+      <h2 style="font-family:'Source Serif 4',Georgia,serif;font-size:22px;font-weight:700;letter-spacing:-.01em;margin:0 0 4px">{{ viewTitle }}</h2>
+      <p style="margin:0;font-size:13.5px;color:#5a606d;max-width:70ch;line-height:1.55;text-wrap:pretty">{{ viewLead }}</p>
+    </div>
+
+    <!-- ============ WORKED QUESTIONS ============ -->
+    <sc-if value="{{ isQuestions }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:16px">
+          <sc-for list="{{ qChips }}" as="c" hint-placeholder-count="4">
+            <button onClick="{{ c.go }}" style="{{ c.style }}">{{ c.label }}</button>
+          </sc-for>
+          <input value="{{ search }}" onInput="{{ onSearch }}" placeholder="Search questions…" style="flex:1 1 180px;min-width:150px;border:1px solid #e2e3ea;background:#fff;border-radius:99px;padding:7px 13px;font:inherit;font-size:12.5px;color:#191b22;outline:none" />
+          <button onClick="{{ toggleAll }}" style="background:none;border:none;font:inherit;font-size:12px;font-weight:600;color:oklch(0.5 0.16 268);cursor:pointer">{{ toggleAllLabel }}</button>
+        </div>
+
+        <sc-for list="{{ qs }}" as="q" hint-placeholder-count="6">
+          <article style="background:#fff;border:1px solid #e2e3ea;border-radius:13px;margin-bottom:11px;overflow:hidden;scroll-margin-top:20px">
+            <div onClick="{{ q.toggle }}" style="display:flex;gap:13px;align-items:flex-start;padding:15px 17px;cursor:pointer" style-hover="background:#fafafc">
+              <div style="{{ q.numStyle }}">{{ q.n }}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:15px;font-weight:600;line-height:1.45;letter-spacing:-.005em">{{ q.title }}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:9px">
+                  <span style="{{ q.domStyle }}">{{ q.domLabel }}</span>
+                  <span style="font-size:10.5px;font-weight:500;padding:3px 8px;border-radius:6px;border:1px solid #e6e7ee;color:#6c7280">{{ q.scenario }}</span>
+                  <sc-if value="{{ q.focus }}"><span style="font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:6px;color:oklch(0.45 0.16 25);background:color-mix(in oklch,oklch(0.55 0.15 25) 12%,#fff);border:1px solid color-mix(in oklch,oklch(0.55 0.15 25) 28%,#fff)">★ {{ q.obj }}</span></sc-if>
+                  <sc-if value="{{ q.added }}"><span style="font-size:10.5px;font-weight:500;padding:3px 8px;border-radius:6px;border:1px dashed #cfd2dc;color:#6c7280">New · {{ q.added }}</span></sc-if>
+                  <sc-if value="{{ q.rated }}"><span style="{{ q.rateStyle }}">{{ q.rateLabel }}</span></sc-if>
+                </div>
+              </div>
+              <div style="{{ q.chevStyle }}">▸</div>
+            </div>
+
+            <sc-if value="{{ q.open }}">
+              <div style="border-top:1px solid #eceef3;padding:14px 17px 17px">
+                <div style="font-size:11.5px;color:#5f6572;letter-spacing:.04em;text-transform:uppercase;font-weight:600;margin-bottom:12px">Scenario · {{ q.scenario }}</div>
+
+                <sc-if value="{{ q.needsCommit }}">
+                  <div style="font-size:12.5px;color:#4b5160;background:#f6f7fb;border:1px dashed #d7dae4;border-radius:9px;padding:10px 12px;margin-bottom:11px">Commit to an answer first — tap the option you'd pick, then every verdict opens.</div>
+                </sc-if>
+
+                <sc-for list="{{ q.opts }}" as="o" hint-placeholder-count="4">
+                  <div onClick="{{ o.pick }}" style="{{ o.style }}">
+                    <div style="display:flex;gap:10px;align-items:flex-start">
+                      <span style="{{ o.letterStyle }}">{{ o.l }}</span>
+                      <span style="flex:1;min-width:0">{{ o.t }}</span>
+                      <sc-if value="{{ o.picked }}"><span style="font-size:10.5px;font-weight:600;color:#6c7280;white-space:nowrap">your pick</span></sc-if>
+                    </div>
+                    <sc-if value="{{ o.show }}">
+                      <div style="margin-top:9px;padding-top:9px;border-top:1px dashed rgba(25,27,34,.14);font-size:13px;line-height:1.6">
+                        <span style="{{ o.tagStyle }}">{{ o.tag }}</span> <span style="color:#5f6572">—</span> {{ o.why }}
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+
+                <div style="margin-top:14px;border:1px solid #e2e3ea;border-left:3px solid oklch(0.5 0.16 268);border-radius:9px;padding:12px 14px;background:#fafafc">
+                  <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:oklch(0.5 0.16 268);margin-bottom:5px">Principle to carry forward</div>
+                  <div style="font-size:13.5px;line-height:1.6;color:#2a2e39">{{ q.principle }}</div>
+                </div>
+
+                <sc-if value="{{ q.hasLinks }}">
+                  <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;align-items:center">
+                    <span style="font-size:11px;color:#5f6572;text-transform:uppercase;letter-spacing:.08em;font-weight:600">Go deeper</span>
+                    <sc-for list="{{ q.links }}" as="lk" hint-placeholder-count="2">
+                      <button onClick="{{ lk.go }}" style="font:inherit;font-size:12px;font-weight:500;border:1px solid #dfe1ea;background:#fff;border-radius:99px;padding:5px 12px;cursor:pointer;color:#2a2e39" style-hover="border-color:oklch(0.5 0.16 268);color:oklch(0.5 0.16 268)">{{ lk.label }}</button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:13px;padding-top:13px;border-top:1px solid #eceef3;align-items:center">
+                  <span style="font-size:11px;color:#5f6572;text-transform:uppercase;letter-spacing:.08em;font-weight:600">How well do you know this?</span>
+                  <sc-for list="{{ q.rateBtns }}" as="r" hint-placeholder-count="3">
+                    <button onClick="{{ r.go }}" style="{{ r.style }}">{{ r.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </article>
+        </sc-for>
+
+        <sc-if value="{{ noResults }}">
+          <div style="background:#fff;border:1px dashed #d7dae4;border-radius:12px;padding:26px;text-align:center;color:#6c7280;font-size:13.5px">Nothing matches that filter.</div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- ============ TRIAGE (PRINCIPLES) ============ -->
+    <sc-if value="{{ isTriage }}">
+      <div>
+        <sc-for list="{{ triage }}" as="p" hint-placeholder-count="8">
+          <div data-tri="1" onClick="{{ p.go }}" style="{{ p.cardStyle }}" style-hover="border-color:#cfd3e0">
+            <div style="padding:14px 16px;min-width:0">
+              <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#5f6572;font-weight:600;margin-bottom:6px">If you see this</div>
+              <div style="font-size:13.5px;line-height:1.55;color:#2a2e39">{{ p.symptom }}</div>
+            </div>
+            <div data-tri-arrow="1" style="display:flex;align-items:center;justify-content:center;color:#b9bdc9;font-size:15px">→</div>
+            <div style="{{ p.verdictStyle }}">
+              <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:6px;opacity:.75">Then the answer is</div>
+              <div style="font-family:'Source Serif 4',Georgia,serif;font-size:15.5px;font-weight:600;line-height:1.35;letter-spacing:-.01em">{{ p.title }}</div>
+              <div style="font-size:11.5px;margin-top:8px;font-weight:600;opacity:.8">{{ p.more }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- ============ TRAPS ============ -->
+    <sc-if value="{{ isTraps }}">
+      <div>
+        <sc-for list="{{ traps }}" as="t" hint-placeholder-count="8">
+          <div style="background:#fff;border:1px solid #e2e3ea;border-radius:13px;padding:16px 18px;margin-bottom:11px">
+            <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:12px">
+              <div style="font-family:'Source Serif 4',Georgia,serif;font-size:16px;font-weight:600;line-height:1.35;letter-spacing:-.01em;flex:1">{{ t.title }}</div>
+              <button onClick="{{ t.drill }}" style="font:inherit;font-size:11.5px;font-weight:600;border:1px solid #dfe1ea;background:#fff;border-radius:99px;padding:5px 11px;cursor:pointer;color:#2a2e39;white-space:nowrap" style-hover="border-color:oklch(0.5 0.16 268);color:oklch(0.5 0.16 268)">Drill it</button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+              <div style="border-radius:10px;padding:11px 13px;font-size:12.5px;line-height:1.55;background:color-mix(in oklch,oklch(0.53 0.17 22) 7%,#fff);border:1px solid color-mix(in oklch,oklch(0.53 0.17 22) 24%,#fff)">
+                <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:oklch(0.47 0.17 22);margin-bottom:5px">Not this</div>
+                {{ t.bad }}
+              </div>
+              <div style="border-radius:10px;padding:11px 13px;font-size:12.5px;line-height:1.55;background:color-mix(in oklch,oklch(0.5 0.12 150) 8%,#fff);border:1px solid color-mix(in oklch,oklch(0.5 0.12 150) 26%,#fff)">
+                <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:oklch(0.42 0.12 150);margin-bottom:5px">Do this</div>
+                {{ t.good }}
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- ============ TASK RECALL PIPELINES ============ -->
+    <sc-if value="{{ isRecall }}">
+      <div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px">
+          <sc-for list="{{ playbooks }}" as="pb" hint-placeholder-count="5">
+            <button onClick="{{ pb.go }}" style="{{ pb.style }}">{{ pb.label }}</button>
+          </sc-for>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e2e3ea;border-radius:14px;padding:20px 22px">
+          <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">
+            <h3 style="font-family:'Source Serif 4',Georgia,serif;font-size:19px;font-weight:700;margin:0;letter-spacing:-.01em">{{ pbTitle }}</h3>
+            <span style="{{ pbDomStyle }}">{{ pbDomLabel }}</span>
+          </div>
+          <p style="font-size:13px;color:#4b5160;line-height:1.6;margin:8px 0 18px;max-width:74ch">{{ pbGoal }}</p>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(198px,1fr));gap:10px">
+            <sc-for list="{{ pbStages }}" as="s" hint-placeholder-count="8">
+              <button onClick="{{ s.go }}" style="{{ s.style }}" style-hover="border-color:oklch(0.5 0.16 268)">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+                  <span style="{{ s.numStyle }}">{{ s.i }}</span>
+                  <span style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#5f6572;font-weight:600">{{ s.phase }}</span>
+                </div>
+                <div style="font-size:12.5px;line-height:1.5;text-align:left;color:#2a2e39">{{ s.head }}</div>
+                <sc-if value="{{ s.hasTokens }}">
+                  <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">
+                    <sc-for list="{{ s.tokens }}" as="tk" hint-placeholder-count="2">
+                      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;background:#f1f2f7;border:1px solid #e6e7ee;border-radius:5px;padding:2px 5px;color:#4b5160">{{ tk }}</span>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </button>
+            </sc-for>
+          </div>
+          <div style="font-size:11.5px;color:#5f6572;margin-top:14px">Tap a stage to open its full step and the exact flags or paths it touches.</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ============ VISUAL MAP ============ -->
+    <sc-if value="{{ isMap }}">
+      <div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px">
+          <sc-for list="{{ diagChips }}" as="c" hint-placeholder-count="13">
+            <button onClick="{{ c.go }}" style="{{ c.style }}">{{ c.label }}</button>
+          </sc-for>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e2e3ea;border-radius:14px;padding:20px 22px 24px">
+          <h3 style="font-family:'Source Serif 4',Georgia,serif;font-size:20px;font-weight:700;margin:0 0 8px;letter-spacing:-.012em">{{ diagTitle }}</h3>
+          <p style="font-size:13px;color:#4b5160;line-height:1.65;margin:0 0 16px;max-width:76ch;text-wrap:pretty">{{ diagLead }}</p>
+
+          <sc-if value="{{ diagHasSeq }}">
+            <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:16px;padding:9px 11px;background:#f6f7fb;border:1px solid #e6e7ee;border-radius:10px">
+              <span style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:#5f6572">Step through</span>
+              <button onClick="{{ stepPrev }}" style="font:inherit;font-size:12px;font-weight:600;border:1px solid #dfe1ea;background:#fff;border-radius:8px;padding:5px 10px;cursor:pointer">◂ Back</button>
+              <button onClick="{{ stepNext }}" style="font:inherit;font-size:12px;font-weight:600;border:1px solid oklch(0.5 0.16 268);background:oklch(0.5 0.16 268);color:#fff;border-radius:8px;padding:5px 12px;cursor:pointer">{{ stepLabel }}</button>
+              <span style="font-size:12px;color:#4b5160">{{ stepStatus }}</span>
+            </div>
+          </sc-if>
+
+          <sc-for list="{{ diagRows }}" as="row" hint-placeholder-count="3">
+            <div style="margin-bottom:18px">
+              <sc-if value="{{ row.label }}">
+                <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5f6572;font-weight:600;margin-bottom:9px">{{ row.label }}</div>
+              </sc-if>
+              <div style="{{ row.style }}">
+                <sc-for list="{{ row.nodes }}" as="nd" hint-placeholder-count="4">
+                  <button onClick="{{ nd.go }}" style="{{ nd.style }}" style-hover="filter:brightness(0.985)">
+                    <div style="{{ nd.titleStyle }}">{{ nd.t }}</div>
+                    <sc-if value="{{ nd.s }}"><div style="{{ nd.subStyle }}">{{ nd.s }}</div></sc-if>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+          <div style="font-size:11.5px;color:#5f6572;border-top:1px solid #eceef3;padding-top:12px">Every block is clickable — the detail, the trap, and the exam framing open in the rail.</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ============ DRILL ============ -->
+    <sc-if value="{{ isDrill }}">
+      <div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px">
+          <sc-for list="{{ drillModes }}" as="m" hint-placeholder-count="2">
+            <button onClick="{{ m.go }}" style="{{ m.style }}">{{ m.label }}</button>
+          </sc-for>
+          <span style="flex:1"></span>
+          <span style="font-size:12px;color:#6c7280;align-self:center">{{ drillScore }}</span>
+        </div>
+
+        <sc-if value="{{ isCards }}">
+          <div style="max-width:660px;margin:0 auto">
+            <div onClick="{{ flip }}" style="background:#fff;border:1px solid #e2e3ea;border-radius:16px;padding:30px 28px;min-height:290px;display:flex;flex-direction:column;cursor:pointer;box-shadow:0 1px 2px rgba(25,27,34,.04),0 10px 28px rgba(25,27,34,.05)">
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px">
+                <span style="{{ cardKindStyle }}">{{ cardKind }}</span>
+                <span style="font-size:11px;color:#5f6572">{{ cardCounter }}</span>
+              </div>
+              <div style="font-family:'Source Serif 4',Georgia,serif;font-size:20px;line-height:1.45;font-weight:600;letter-spacing:-.01em;color:#191b22">{{ cardFront }}</div>
+              <sc-if value="{{ flipped }}">
+                <div style="margin-top:18px;padding-top:16px;border-top:1px solid #eceef3;font-size:14px;line-height:1.68;color:#2a2e39;animation:fadeUp .2s ease">{{ cardBack }}</div>
+              </sc-if>
+              <div style="flex:1"></div>
+              <sc-if value="{{ notFlipped }}">
+                <div style="font-size:12px;color:#5f6572;margin-top:20px">Answer it in your head, then tap to reveal.</div>
+              </sc-if>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;justify-content:center">
+              <sc-for list="{{ cardBtns }}" as="b" hint-placeholder-count="3">
+                <button onClick="{{ b.go }}" style="{{ b.style }}">{{ b.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isSpot }}">
+          <div style="max-width:660px;margin:0 auto">
+            <div style="background:#fff;border:1px solid #e2e3ea;border-radius:16px;padding:26px 26px 24px;box-shadow:0 1px 2px rgba(25,27,34,.04),0 10px 28px rgba(25,27,34,.05)">
+              <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#5f6572;font-weight:600;margin-bottom:10px">Question {{ spotN }} · {{ spotScenario }}</div>
+              <div style="font-size:13.5px;line-height:1.6;color:#4b5160;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #eceef3">{{ spotStem }}</div>
+              <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#5f6572;font-weight:600;margin-bottom:8px">One option</div>
+              <div style="font-family:'Source Serif 4',Georgia,serif;font-size:18px;line-height:1.5;font-weight:600;color:#191b22">{{ spotOpt }}</div>
+
+              <sc-if value="{{ spotUnanswered }}">
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:22px">
+                  <button onClick="{{ spotSayGood }}" style="flex:1 1 160px;font:inherit;font-size:13.5px;font-weight:600;border:1px solid color-mix(in oklch,oklch(0.5 0.12 150) 40%,#fff);background:color-mix(in oklch,oklch(0.5 0.12 150) 8%,#fff);color:oklch(0.4 0.12 150);border-radius:10px;padding:12px;cursor:pointer">This is the answer</button>
+                  <button onClick="{{ spotSayBad }}" style="flex:1 1 160px;font:inherit;font-size:13.5px;font-weight:600;border:1px solid color-mix(in oklch,oklch(0.53 0.17 22) 40%,#fff);background:color-mix(in oklch,oklch(0.53 0.17 22) 8%,#fff);color:oklch(0.45 0.17 22);border-radius:10px;padding:12px;cursor:pointer">This is a trap</button>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ spotAnswered }}">
+                <div style="{{ spotVerdictStyle }}">
+                  <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:6px">{{ spotVerdict }}</div>
+                  <div style="font-size:13.5px;line-height:1.65;color:#2a2e39">{{ spotWhy }}</div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+                  <button onClick="{{ spotNext }}" style="font:inherit;font-size:13px;font-weight:600;border:1px solid oklch(0.5 0.16 268);background:oklch(0.5 0.16 268);color:#fff;border-radius:9px;padding:9px 16px;cursor:pointer">Next distractor →</button>
+                  <button onClick="{{ spotOpenQ }}" style="font:inherit;font-size:13px;font-weight:500;border:1px solid #dfe1ea;background:#fff;border-radius:9px;padding:9px 14px;cursor:pointer;color:#2a2e39">See the full question</button>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- ============ REVIEW QUEUE ============ -->
+    <sc-if value="{{ isReview }}">
+      <div>
+        <sc-if value="{{ reviewEmpty }}">
+          <div style="background:#fff;border:1px dashed #d7dae4;border-radius:13px;padding:30px 26px;text-align:center">
+            <div style="font-family:'Source Serif 4',Georgia,serif;font-size:17px;font-weight:600;margin-bottom:6px">Nothing queued yet</div>
+            <div style="font-size:13px;color:#6c7280;max-width:46ch;margin:0 auto;line-height:1.6">Rate a question <b>Shaky</b> or <b>No idea</b> and it lands here. The queue is stored in this browser only.</div>
+          </div>
+        </sc-if>
+        <sc-for list="{{ reviewItems }}" as="r" hint-placeholder-count="3">
+          <div onClick="{{ r.go }}" style="background:#fff;border:1px solid #e2e3ea;border-left:3px solid {{ r.color }};border-radius:11px;padding:14px 16px;margin-bottom:9px;cursor:pointer" style-hover="border-color:#cfd3e0">
+            <div style="display:flex;gap:9px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
+              <span style="{{ r.badge }}">{{ r.badgeLabel }}</span>
+              <span style="font-size:11px;color:#5f6572">Question {{ r.n }} · {{ r.scenario }}</span>
+            </div>
+            <div style="font-size:13.5px;line-height:1.55;color:#2a2e39">{{ r.title }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- ============ REFERENCE ============ -->
+    <sc-if value="{{ isRef }}">
+      <div>
+        <input value="{{ refSearch }}" onInput="{{ onRefSearch }}" placeholder="Filter flags, paths and values…" style="width:100%;max-width:340px;border:1px solid #e2e3ea;background:#fff;border-radius:99px;padding:8px 14px;font:inherit;font-size:13px;margin-bottom:18px;outline:none" />
+        <sc-for list="{{ refBlocks }}" as="b" hint-placeholder-count="5">
+          <div style="background:#fff;border:1px solid #e2e3ea;border-radius:13px;padding:16px 18px 8px;margin-bottom:12px">
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+              <h3 style="font-family:'Source Serif 4',Georgia,serif;font-size:16px;font-weight:700;margin:0">{{ b.h }}</h3>
+              <sc-if value="{{ b.added }}"><span style="font-size:10px;font-weight:500;padding:2px 7px;border-radius:5px;border:1px dashed #cfd2dc;color:#5f6572">New · {{ b.added }}</span></sc-if>
+            </div>
+            <sc-for list="{{ b.rows }}" as="r" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:minmax(0,34%) minmax(0,1fr);gap:12px;padding:9px 0;border-top:1px solid #f1f2f7;align-items:baseline">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#191b22;word-break:break-word">{{ r.k }}</div>
+                <div style="font-size:12.5px;line-height:1.55;color:#4b5160">{{ r.v }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <footer style="margin-top:40px;padding-top:18px;border-top:1px solid #e2e3ea;font-size:11.5px;color:#5f6572;line-height:1.6">
+      Built from the official Exam Guide v0.2 (June 30 2026). Study aid — verify against current Anthropic documentation. Ratings and queue are stored in this browser only.
+    </footer>
+  </main>
+
+  <aside id="rail" style="flex:0 0 330px;width:330px;position:sticky;top:0;height:100vh;overflow-y:auto;background:#fbfbfd;border-left:1px solid #e2e3ea;padding:24px 20px 40px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#5f6572;font-weight:600">{{ railKicker }}</div>
+      <sc-if value="{{ hasRail }}">
+        <button onClick="{{ closeRail }}" style="background:none;border:none;font:inherit;font-size:16px;line-height:1;color:#5f6572;cursor:pointer;padding:2px 4px">×</button>
+      </sc-if>
+    </div>
+    <sc-if value="{{ hasRail }}">
+      <div style="animation:fadeUp .18s ease">
+        <div style="font-family:'Source Serif 4',Georgia,serif;font-size:17px;font-weight:700;line-height:1.35;letter-spacing:-.012em;margin-bottom:10px">{{ railTitle }}</div>
+        <sc-if value="{{ railSub }}">
+          <div style="font-size:11.5px;color:#5f6572;margin-bottom:12px;font-family:'IBM Plex Mono',monospace">{{ railSub }}</div>
+        </sc-if>
+        <div style="font-size:13.5px;line-height:1.7;color:#2a2e39">{{ railBody }}</div>
+        <sc-if value="{{ railHasChips }}">
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid #eceef3">
+            <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#5f6572;font-weight:600;margin-bottom:8px">{{ railChipLabel }}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <sc-for list="{{ railChips }}" as="c" hint-placeholder-count="2">
+                <button onClick="{{ c.go }}" style="font:inherit;font-size:11.5px;font-weight:500;border:1px solid #dfe1ea;background:#fff;border-radius:99px;padding:5px 11px;cursor:pointer;color:#2a2e39;text-align:left" style-hover="border-color:oklch(0.5 0.16 268);color:oklch(0.5 0.16 268)">{{ c.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+    <sc-if value="{{ noRail }}">
+      <div style="font-size:13px;color:#6c7280;line-height:1.65">
+        <p style="margin:0 0 12px">This rail holds whatever you're inspecting: a principle behind a question, a pipeline stage with its exact flags, a diagram block's trap.</p>
+        <p style="margin:0 0 14px">Nothing selected right now.</p>
+        <div style="border-top:1px solid #eceef3;padding-top:14px">
+          <div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#5f6572;font-weight:600;margin-bottom:8px">Jump in</div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
+            <sc-for list="{{ railSuggest }}" as="s" hint-placeholder-count="3">
+              <button onClick="{{ s.go }}" style="font:inherit;font-size:12.5px;font-weight:500;border:none;background:none;padding:0;cursor:pointer;color:oklch(0.5 0.16 268);text-align:left;line-height:1.5" style-hover="text-decoration:underline">{{ s.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;answerReveal&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;instant&quot;,&quot;commit&quot;],&quot;default&quot;:&quot;instant&quot;,&quot;tsType&quot;:&quot;'instant' | 'commit'&quot;,&quot;section&quot;:&quot;Study behaviour&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;comfortable&quot;,&quot;compact&quot;],&quot;default&quot;:&quot;comfortable&quot;,&quot;tsType&quot;:&quot;'comfortable' | 'compact'&quot;,&quot;section&quot;:&quot;Study behaviour&quot;},&quot;focusFirst&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Study behaviour&quot;}}">
+const PAL = {
+  ink:"#191b22", muted:"#5f6572", line:"#e2e3ea", accent:"oklch(0.5 0.16 268)",
+  d1:"oklch(0.55 0.15 25)", d2:"oklch(0.55 0.14 250)", d3:"oklch(0.52 0.11 95)",
+  d4:"oklch(0.55 0.15 310)", d5:"oklch(0.5 0.12 165)",
+  good:"oklch(0.5 0.12 150)", bad:"oklch(0.53 0.17 22)"
+};
+const DOM_LABEL = {1:"Agentic Architecture",2:"Tool & MCP",3:"Claude Code",4:"Prompt & Output",5:"Context & Reliability"};
+const TONE = t => ({d1:PAL.d1,d2:PAL.d2,d3:PAL.d3,d4:PAL.d4,d5:PAL.d5,good:PAL.good,bad:PAL.bad,ink:PAL.ink,plain:"#6b7180"}[t] || "#6b7180");
+const tint = (c,p) => "color-mix(in oklch," + c + " " + p + "%,#fff)";
+const RATE = {
+  got:{label:"Got it", color:PAL.good},
+  shaky:{label:"Shaky", color:"oklch(0.6 0.13 75)"},
+  no:{label:"No idea", color:PAL.bad}
+};
+const TOKEN_RE = /(--[a-z][a-z-]+|~?\/?\.claude(?:\.json|\/[a-z._*/-]+)?|\.mcp\.json|CLAUDE\.md|SKILL\.md|tool_choice|stop_reason|fork_session|custom_id|PostToolUse|PreToolUse|allowedTools|AgentDefinition|input_schema|isRetryable|errorCategory|detected_pattern|calculated_total|conflict_detected|@import|\/memory|\/compact|"tool_use"|"end_turn"|"any"|Task)/g;
+
+class Component extends DCLogic {
+  state = {
+    view:"questions", dom:"all", tag:"all", search:"", refSearch:"",
+    open:{}, picks:{}, ratings:{}, allOpen:false,
+    rail:null, pb:0, diag:"request", step:-1,
+    drill:"cards", card:0, flipped:false, spot:null, spotAnswer:null, spotScore:{r:0,w:0},
+    ready:false
+  };
+
+  /* ---------- lifecycle ---------- */
+  componentDidMount(){
+    this.hydrate();
+    try{
+      const saved = JSON.parse(localStorage.getItem("ccaf-v2-progress") || "{}");
+      if(saved && saved.ratings) this.setState({ratings:saved.ratings});
+    }catch(e){}
+  }
+  hydrate(tries){
+    tries = tries || 0;
+    if(window.GUIDE && window.DIAGRAMS){ this.setState({ready:true}); return; }
+    if(tries < 80) setTimeout(()=>this.hydrate(tries+1), 60);
+  }
+  save(ratings){
+    try{ localStorage.setItem("ccaf-v2-progress", JSON.stringify({ratings:ratings})); }catch(e){}
+  }
+
+  /* ---------- helpers ---------- */
+  rich(html, tag){ return React.createElement(tag||"span",{dangerouslySetInnerHTML:{__html:String(html==null?"":html)}}); }
+  G(){ return window.GUIDE || {questions:[],principles:[],traps:[],recall:[],refBlocks:[],visuals:[]}; }
+  D(){ return window.DIAGRAMS || []; }
+  go(view, extra){ this.setState(Object.assign({view:view}, extra||{})); if(typeof window!=="undefined") window.scrollTo({top:0,behavior:"smooth"}); }
+  setRail(r){ this.setState({rail:r}); }
+
+  domainOf(c){ const m = /--d(\d)/.exec(c||""); return m ? +m[1] : 0; }
+
+  /* principles indexed by the (Q#) references in their quick-test line */
+  principlesFor(q){
+    const ps = this.G().principles;
+    const byRef = ps.filter(p => {
+      const refs = (String(p.test||"").match(/Q(\d+)/g)||[]).map(s=>+s.slice(1));
+      return refs.indexOf(q.n) > -1;
+    });
+    if(byRef.length) return byRef.slice(0,3);
+    const words = (q.obj || q.title || "").toLowerCase().split(/[^a-z]+/).filter(w=>w.length>4);
+    const scored = ps.map(p=>{
+      const hay = (p.t+" "+p.body).toLowerCase();
+      let s = words.reduce((a,w)=> a + (hay.indexOf(w)>-1?1:0), 0);
+      if(this.domainOf(p.c) === q.d) s += 0.5;
+      return {p:p, s:s};
+    }).filter(x=>x.s>=1.5).sort((a,b)=>b.s-a.s);
+    return scored.slice(0,2).map(x=>x.p);
+  }
+
+  diagramsFor(q){
+    const hay = (q.title + " " + q.principle + " " + q.opts.map(o=>o.t+" "+o.why).join(" ")).toLowerCase();
+    return this.D().map(d=>{
+      const s = d.tags.reduce((a,t)=> a + (hay.indexOf(t.toLowerCase())>-1?1:0), 0);
+      return {d:d,s:s};
+    }).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,2).map(x=>x.d);
+  }
+
+  questionsUsing(principle){
+    const refs = (String(principle.test||"").match(/Q(\d+)/g)||[]).map(s=>+s.slice(1));
+    return this.G().questions.filter(q=> refs.indexOf(q.n)>-1).slice(0,4);
+  }
+
+  openQuestion(n){
+    const open = Object.assign({}, this.state.open); open[n] = true;
+    this.setState({view:"questions", dom:"all", tag:"all", search:"", open:open, rail:null});
+    setTimeout(()=>{
+      const nodes = document.querySelectorAll("article");
+      for(let i=0;i<nodes.length;i++){
+        if((nodes[i].textContent||"").indexOf(String(n))===0){ window.scrollTo({top:nodes[i].getBoundingClientRect().top + window.scrollY - 20, behavior:"smooth"}); break; }
+      }
+    },80);
+  }
+
+  railForPrinciple(p){
+    const qs = this.questionsUsing(p);
+    this.setRail({
+      kicker:"Decision principle", title:p.t,
+      body:React.createElement("div",null,
+        this.rich(p.body,"div"),
+        React.createElement("div",{style:{marginTop:"12px",padding:"10px 12px",background:tint(PAL.accent,7),border:"1px solid "+tint(PAL.accent,22),borderRadius:"9px",fontSize:"13px"}},
+          React.createElement("b",null,"Quick test — "), this.rich(p.test))
+      ),
+      chipLabel: qs.length ? "Questions decided by this" : null,
+      chips: qs.map(q=>({label:"Q"+q.n+" · "+String(q.title).slice(0,46)+"…", act:()=>this.openQuestion(q.n)}))
+    });
+  }
+
+  railForStage(pb, i, step){
+    const tokens = [];
+    String(step).replace(TOKEN_RE, m=>{ if(tokens.indexOf(m)<0) tokens.push(m); return m; });
+    this.setRail({
+      kicker:"Stage " + (i+1) + " of " + pb.steps.length,
+      title:"Step " + (i+1),
+      sub:pb.t,
+      body:React.createElement("div",null,
+        this.rich(step,"div"),
+        tokens.length ? React.createElement("div",{style:{marginTop:"14px"}},
+          React.createElement("div",{style:{fontSize:"10.5px",letterSpacing:".1em",textTransform:"uppercase",color:"#5f6572",fontWeight:600,marginBottom:"7px"}},"Exact values in this step"),
+          React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:"5px"}},
+            tokens.map((t,j)=>React.createElement("span",{key:j,style:{fontFamily:"'IBM Plex Mono',monospace",fontSize:"11px",background:"#f1f2f7",border:"1px solid #e6e7ee",borderRadius:"5px",padding:"3px 6px"}},t)))
+        ) : null
+      )
+    });
+  }
+
+  /* ---------- drill decks ---------- */
+  deck(){
+    const G = this.G();
+    const cards = [];
+    G.principles.forEach(p=>cards.push({kind:"Principle", tone:PAL.accent, front:p.test, back:React.createElement("div",null,
+      React.createElement("div",{style:{fontFamily:"'Source Serif 4',Georgia,serif",fontSize:"16px",fontWeight:600,marginBottom:"8px"}},p.t), this.rich(p.body,"div"))}));
+    G.traps.forEach(t=>cards.push({kind:"Trap", tone:PAL.bad, front:t.t, back:React.createElement("div",null,
+      React.createElement("div",{style:{marginBottom:"10px"}},React.createElement("b",{style:{color:PAL.good}},"Do this — "), this.rich(t.good)),
+      React.createElement("div",null,React.createElement("b",{style:{color:PAL.bad}},"Not this — "), this.rich(t.bad)))}));
+    return cards;
+  }
+
+  pickSpot(){
+    const qs = this.G().questions;
+    if(!qs.length) return null;
+    const q = qs[Math.floor(Math.random()*qs.length)];
+    const o = q.opts[Math.floor(Math.random()*q.opts.length)];
+    return {n:q.n, scenario:q.scenario, stem:q.title, opt:o.t, correct:!!o.correct, why:o.why};
+  }
+
+  /* ---------- render values ---------- */
+  renderVals(){
+    const S = this.state, G = this.G(), P = this.props;
+    const commit = (P.answerReveal || "instant") === "commit";
+    const dense = (P.density || "comfortable") === "compact";
+    const focusFirst = !!P.focusFirst;
+
+    /* ---- nav ---- */
+    const counts = {
+      questions:G.questions.length, triage:G.principles.length, traps:G.traps.length,
+      recall:G.recall.length, map:this.D().length, ref:G.refBlocks.length,
+      drill:G.principles.length + G.traps.length,
+      review:Object.keys(S.ratings).filter(k=>S.ratings[k]!=="got").length
+    };
+    const NAV = [
+      ["questions","Worked questions"],["triage","Triage flow"],["traps","Traps & exceptions"],
+      ["recall","Task pipelines"],["map","Visual map"],["drill","Drill"],["review","Review queue"],["ref","Quick reference"]
+    ];
+    const nav = NAV.map(([id,label])=>{
+      const on = S.view===id;
+      return {
+        label:label, count:counts[id]||0,
+        style:{display:"flex",alignItems:"center",gap:"8px",width:"100%",font:"inherit",fontSize:"13px",fontWeight:on?600:500,
+          border:"none",borderRadius:"8px",padding:"7px 9px",cursor:"pointer",textAlign:"left",
+          background:on?tint(PAL.accent,10):"transparent", color:on?PAL.accent:"#2a2e39"},
+        countStyle:{fontSize:"10.5px",fontVariantNumeric:"tabular-nums",color:on?PAL.accent:"#6b7180"},
+        go:()=>this.go(id)
+      };
+    });
+
+    const domainNav = [{d:"all",label:"All domains"},{d:1},{d:2},{d:3},{d:4},{d:5}].map(x=>{
+      const isAll = x.d==="all";
+      const on = String(S.dom)===String(x.d) && S.view==="questions";
+      const color = isAll ? PAL.ink : PAL[("d"+x.d)];
+      return {
+        label: isAll ? "All domains" : ("D"+x.d+" · "+DOM_LABEL[x.d]),
+        count: isAll ? G.questions.length : G.questions.filter(q=>q.d===x.d).length,
+        dot:{width:"8px",height:"8px",borderRadius:"50%",flex:"0 0 auto",background:color},
+        style:{display:"flex",alignItems:"center",gap:"8px",width:"100%",font:"inherit",fontSize:"12px",fontWeight:on?600:500,
+          border:"none",borderRadius:"8px",padding:"6px 9px",cursor:"pointer",textAlign:"left",whiteSpace:"nowrap",
+          background:on?"#f1f2f7":"transparent",color:on?PAL.ink:"#4b5160"},
+        go:()=>this.setState({view:"questions",dom:x.d})
+      };
+    });
+
+    /* ---- progress ---- */
+    const rated = Object.keys(S.ratings).length;
+    const progressBars = [1,2,3,4,5].map(d=>{
+      const qs = G.questions.filter(q=>q.d===d);
+      const done = qs.filter(q=>S.ratings[q.n]==="got").length;
+      const pct = qs.length ? Math.round(done/qs.length*100) : 0;
+      return {label:"D"+d, pct:pct+"%", fill:{width:pct+"%",height:"100%",background:PAL["d"+d],borderRadius:"99px",transition:"width .3s ease"}};
+    });
+
+    /* ---- questions ---- */
+    let list = G.questions.slice();
+    if(S.dom!=="all") list = list.filter(q=>q.d===+S.dom);
+    if(S.tag==="focus") list = list.filter(q=>q.focus);
+    if(S.tag==="new") list = list.filter(q=>q.added);
+    if(S.tag==="queue") list = list.filter(q=>S.ratings[q.n] && S.ratings[q.n]!=="got");
+    if(S.search.trim()){
+      const s = S.search.toLowerCase();
+      list = list.filter(q => (q.title+" "+q.scenario+" "+(q.obj||"")+" "+q.opts.map(o=>o.t).join(" ")).toLowerCase().indexOf(s)>-1);
+    }
+    if(focusFirst) list = list.slice().sort((a,b)=> (b.focus?1:0)-(a.focus?1:0));
+
+    const qs = list.map(q=>{
+      const open = !!S.open[q.n];
+      const pick = S.picks[q.n];
+      const revealed = !commit || !!pick;
+      const rating = S.ratings[q.n];
+      const links = [];
+      this.principlesFor(q).forEach(p=>links.push({label:"Principle · "+String(p.t).replace(/^★ /,"").slice(0,42), go:()=>this.railForPrinciple(p)}));
+      this.diagramsFor(q).forEach(d=>links.push({label:"Diagram · "+d.t.split("—")[0].trim(), go:()=>this.go("map",{diag:d.id,step:-1,rail:null})}));
+      return {
+        n:q.n, title:q.title, scenario:q.scenario, focus:!!q.focus, obj:q.obj||"", added:q.added||"", open:open,
+        principle:this.rich(q.principle),
+        domLabel:"D"+q.d+" · "+DOM_LABEL[q.d],
+        domStyle:{fontSize:"10.5px",fontWeight:600,padding:"3px 8px",borderRadius:"6px",color:"#fff",background:PAL["d"+q.d],whiteSpace:"nowrap"},
+        numStyle:{flex:"0 0 auto",width:"29px",height:"29px",borderRadius:"8px",background:open?PAL.accent:"#f1f2f7",color:open?"#fff":"#4b5160",
+          display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:"12.5px",fontVariantNumeric:"tabular-nums"},
+        chevStyle:{flex:"0 0 auto",color:"#b9bdc9",fontSize:"13px",marginTop:"5px",transform:open?"rotate(90deg)":"none",transition:"transform .18s ease"},
+        rated:!!rating, rateLabel:rating?RATE[rating].label:"",
+        rateStyle: rating ? {fontSize:"10.5px",fontWeight:600,padding:"3px 8px",borderRadius:"6px",color:RATE[rating].color,background:tint(RATE[rating].color,10),border:"1px solid "+tint(RATE[rating].color,26)} : {},
+        needsCommit: open && commit && !pick,
+        toggle:()=>{ const o=Object.assign({},S.open); o[q.n]=!open; this.setState({open:o}); },
+        opts:q.opts.map(o=>{
+          const show = revealed;
+          const isPick = pick===o.l;
+          const c = o.correct?PAL.good:PAL.bad;
+          return {
+            l:o.l, t:o.t, picked:isPick, show:show, why:this.rich(o.why),
+            tag:o.correct?"✓ Why it wins":"✗ Why it fails",
+            tagStyle:{fontWeight:700,fontSize:"10.5px",textTransform:"uppercase",letterSpacing:".06em",color:c},
+            letterStyle:{fontWeight:700,flex:"0 0 auto",color:show?c:"#6c7280",width:"14px"},
+            style:{border:"1px solid "+(show?tint(c,26):(isPick?"#c9cddb":"#e6e7ee")),background:show?tint(c,7):"#fff",
+              borderRadius:"10px",padding:dense?"9px 11px":"11px 13px",marginBottom:"8px",fontSize:"13.5px",lineHeight:"1.55",
+              cursor:commit&&!revealed?"pointer":"default",transition:"background .18s ease,border-color .18s ease"},
+            pick:()=>{ if(!commit) return; const p=Object.assign({},S.picks); p[q.n]=o.l; this.setState({picks:p}); }
+          };
+        }),
+        hasLinks:links.length>0, links:links,
+        rateBtns:Object.keys(RATE).map(k=>{
+          const on = rating===k;
+          return {label:RATE[k].label, style:{font:"inherit",fontSize:"11.5px",fontWeight:600,border:"1px solid "+(on?RATE[k].color:"#dfe1ea"),
+            background:on?tint(RATE[k].color,12):"#fff",color:on?RATE[k].color:"#4b5160",borderRadius:"99px",padding:"5px 12px",cursor:"pointer"},
+            go:()=>{ const r=Object.assign({},S.ratings); if(r[q.n]===k){ delete r[q.n]; } else { r[q.n]=k; } this.setState({ratings:r}); this.save(r); }};
+        })
+      };
+    });
+
+    const qChips = [
+      {id:"all",label:"All questions"},{id:"focus",label:"★ Focus areas"},{id:"new",label:"New · 9/12"},{id:"queue",label:"My queue"}
+    ].map(c=>{
+      const on = S.tag===c.id;
+      return {label:c.label, style:{font:"inherit",fontSize:"12px",fontWeight:600,border:"1px solid "+(on?"transparent":"#dfe1ea"),
+        background:on?PAL.ink:"#fff",color:on?"#fff":"#4b5160",borderRadius:"99px",padding:"6px 13px",cursor:"pointer"},
+        go:()=>this.setState({tag:c.id})};
+    });
+
+    /* ---- triage ---- */
+    const triage = G.principles.map(p=>{
+      const d = this.domainOf(p.c) || 1;
+      const color = PAL["d"+d];
+      return {
+        symptom:this.rich(String(p.test).replace(/\s*\(Q[^)]*\)\s*$/,"")),
+        title:String(p.t).replace(/^★ /,""),
+        more:"Why it holds · linked questions →",
+        cardStyle:{display:"grid",gridTemplateColumns:"minmax(0,1.02fr) 30px minmax(0,1fr)",background:"#fff",border:"1px solid "+PAL.line,
+          borderRadius:"13px",marginBottom:"10px",cursor:"pointer",overflow:"hidden",transition:"border-color .15s ease",width:"100%",font:"inherit"},
+        verdictStyle:{padding:"14px 16px",background:tint(color,7),borderLeft:"3px solid "+color,color:"#2a2e39",minWidth:0},
+        go:()=>this.railForPrinciple(p)
+      };
+    });
+
+    /* ---- traps ---- */
+    const traps = G.traps.map(t=>({
+      title:String(t.t).replace(/^★ /,""), good:this.rich(t.good), bad:this.rich(t.bad),
+      drill:()=>this.go("drill",{drill:"cards", card:G.principles.length + G.traps.indexOf(t), flipped:false})
+    }));
+
+    /* ---- recall pipelines ---- */
+    const pbIndex = Math.min(S.pb, Math.max(0,G.recall.length-1));
+    const pb = G.recall[pbIndex] || {t:"",goal:"",steps:[],c:"--d1"};
+    const pbDom = this.domainOf(pb.c) || 1;
+    const playbooks = G.recall.map((r,i)=>{
+      const on = i===pbIndex;
+      return {label:String(r.t).replace(/^★ /,""), style:{font:"inherit",fontSize:"12px",fontWeight:600,border:"1px solid "+(on?"transparent":"#dfe1ea"),
+        background:on?PAL.ink:"#fff",color:on?"#fff":"#4b5160",borderRadius:"10px",padding:"7px 13px",cursor:"pointer",textAlign:"left",lineHeight:1.35},
+        go:()=>this.setState({pb:i, rail:null})};
+    });
+    const phaseOf = (i,n) => i===0 ? "Set up" : (i>=n-1 ? "Verify" : (i < Math.ceil(n/2) ? "Build" : "Harden"));
+    const pbStages = pb.steps.map((s,i)=>{
+      const tokens = [];
+      String(s).replace(TOKEN_RE, m=>{ if(tokens.indexOf(m)<0) tokens.push(m); return m; });
+      let head = String(s).replace(/<[^>]+>/g,"").replace(/^(Verify|Set up|Build|Harden)\s*:\s*/i,"");
+      head = head.charAt(0).toUpperCase() + head.slice(1);
+      const cut = head.search(/(\s—\s|\.\s+[A-Z(])/);
+      if(cut > 24) head = head.slice(0, cut);
+      if(head.length > 86){
+        const sp = head.lastIndexOf(" ", 86);
+        head = head.slice(0, sp > 40 ? sp : 86).replace(/[,;(]$/,"") + "…";
+      }
+      const isOpen = S.rail && S.rail.kicker === ("Stage " + (i+1) + " of " + pb.steps.length) && S.rail.sub === pb.t;
+      return {
+        i:i+1, phase:phaseOf(i,pb.steps.length), head:head, tokens:tokens.slice(0,3), hasTokens:tokens.length>0,
+        numStyle:{width:"20px",height:"20px",borderRadius:"6px",background:isOpen?PAL.accent:tint(PAL["d"+pbDom],14),
+          color:isOpen?"#fff":PAL["d"+pbDom],display:"flex",alignItems:"center",justifyContent:"center",fontSize:"11px",fontWeight:700,flex:"0 0 auto"},
+        style:{display:"block",width:"100%",textAlign:"left",font:"inherit",background:isOpen?tint(PAL.accent,6):"#fff",
+          border:"1px solid "+(isOpen?PAL.accent:"#e6e7ee"),borderRadius:"11px",padding:"12px 13px",cursor:"pointer",transition:"border-color .15s ease"},
+        go:()=>this.railForStage(pb,i,s)
+      };
+    });
+
+    /* ---- visual map ---- */
+    const diags = this.D();
+    const diag = diags.filter(d=>d.id===S.diag)[0] || diags[0] || {t:"",lead:"",rows:[]};
+    const seq = diag.seq || null;
+    const activeSeq = seq && S.step>=0 ? seq.slice(0, S.step+1) : null;
+    const diagChips = diags.map(d=>{
+      const on = d.id===diag.id;
+      return {label:d.t.split("—")[0].trim(), style:{font:"inherit",fontSize:"12px",fontWeight:600,border:"1px solid "+(on?"transparent":"#dfe1ea"),
+        background:on?PAL.ink:"#fff",color:on?"#fff":"#4b5160",borderRadius:"10px",padding:"7px 13px",cursor:"pointer",lineHeight:1.35,textAlign:"left"},
+        go:()=>this.setState({diag:d.id, step:-1, rail:null})};
+    });
+    const rowStyle = kind => kind==="flow"
+      ? {display:"flex",flexWrap:"wrap",gap:"8px",alignItems:"stretch"}
+      : kind==="stack"
+        ? {display:"flex",flexDirection:"column",gap:"8px"}
+        : {display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,230px),1fr))",gap:"8px"};
+    const diagRows = (diag.rows||[]).map(row=>({
+      label:row.label||"", style:rowStyle(row.kind),
+      nodes:(row.nodes||[]).map((nd,i)=>{
+        const color = TONE(nd.tone);
+        const dim = activeSeq ? activeSeq.indexOf(nd.id)<0 && seq.indexOf(nd.id)>-1 : false;
+        const cur = activeSeq ? activeSeq[activeSeq.length-1]===nd.id : false;
+        const isSel = S.rail && S.rail.nodeKey === diag.id+":"+nd.id;
+        return {
+          t:nd.t, s:nd.s||"",
+          style:{flex:row.kind==="flow"?"1 1 190px":"1 1 auto",textAlign:"left",font:"inherit",cursor:"pointer",
+            background:nd.tone==="plain"?"#fff":tint(color,7),
+            border:(cur||isSel?"2px":"1px")+" solid "+(cur||isSel?PAL.accent:(nd.tone==="plain"?"#e6e7ee":tint(color,30))),
+            borderRadius:nd.shape==="decision"?"999px":"11px",
+            padding:nd.shape==="decision"?"13px 20px":"12px 14px",
+            opacity:dim?0.38:1, transition:"opacity .2s ease,border-color .2s ease", minWidth:0},
+          titleStyle:{fontSize:"12.5px",fontWeight:700,color:nd.tone==="plain"?PAL.ink:color,marginBottom:nd.s?"5px":0,lineHeight:1.35},
+          subStyle:{fontSize:"11.5px",lineHeight:1.5,color:"#4b5160"},
+          go:()=>this.setRail({kicker:diag.t.split("—")[0].trim(), title:nd.t, sub:nd.s||"", nodeKey:diag.id+":"+nd.id,
+            body:this.rich(nd.d,"div")})
+        };
+      })
+    }));
+
+    /* ---- drill ---- */
+    const deck = this.deck();
+    const cardIdx = deck.length ? ((S.card % deck.length) + deck.length) % deck.length : 0;
+    const card = deck[cardIdx] || {kind:"",front:"",back:"",tone:PAL.accent};
+    const spot = S.spot || this.pickSpot() || {stem:"",opt:"",why:"",correct:false,n:0,scenario:""};
+    const spotAns = S.spotAnswer;
+    const spotRight = spotAns!=null && (spotAns === (spot.correct?"good":"bad"));
+
+    /* ---- review queue ---- */
+    const reviewItems = G.questions.filter(q=>S.ratings[q.n] && S.ratings[q.n]!=="got").map(q=>{
+      const r = RATE[S.ratings[q.n]];
+      return {n:q.n, title:q.title, scenario:q.scenario, color:r.color,
+        badgeLabel:r.label, badge:{fontSize:"10.5px",fontWeight:600,padding:"3px 8px",borderRadius:"6px",color:r.color,background:tint(r.color,10),border:"1px solid "+tint(r.color,26)},
+        go:()=>this.openQuestion(q.n)};
+    });
+
+    /* ---- reference ---- */
+    const rs = S.refSearch.trim().toLowerCase();
+    const refBlocks = G.refBlocks.map(b=>({
+      h:String(b.h).replace(/^★ /,""), added:b.added||"",
+      rows:b.rows.filter(r=> !rs || (r[0]+" "+r[1]).toLowerCase().indexOf(rs)>-1).map(r=>({k:r[0].replace(/&lt;/g,"<").replace(/&gt;/g,">"), v:this.rich(r[1])}))
+    })).filter(b=> b.rows.length>0);
+
+    const TITLES = {
+      questions:["Worked questions","Filter by domain or objective, open a question, and read why each distractor fails. Every card links out to the principle and the diagram behind it."],
+      triage:["Triage flow","Symptom on the left, the answer it forces on the right. This is how the questions actually present — recognise the symptom and the option set collapses."],
+      traps:["Traps & exceptions","Wrong answers that look right, paired with what to do instead — plus the conditions that flip a normally-correct approach."],
+      recall:["Task pipelines","Each build playbook as a numbered pipeline. Tap a stage for the full step and the exact flags, paths, and fields it touches."],
+      map:["Visual map","Redrawn and clickable. Step through the loops, open any block for its detail and its trap."],
+      drill:["Drill","Active recall. Flashcards on the principles and traps, or judge single options cold in spot-the-trap."],
+      review:["Review queue","Everything you rated Shaky or No idea, in one place."],
+      ref:["Quick reference","The exact flags, paths, and configuration values that show up as distractors when they're slightly wrong."]
+    };
+    const T = TITLES[S.view] || TITLES.questions;
+
+    const rail = S.rail;
+
+    return {
+      ready:S.ready,
+      nav:nav, domainNav:domainNav,
+      progressLabel: rated ? (rated + " of " + G.questions.length + " questions rated") : "No questions rated yet",
+      progressBars:progressBars,
+      resetProgress:()=>{ this.setState({ratings:{}}); this.save({}); },
+
+      viewTitle:T[0], viewLead:T[1],
+      isQuestions:S.view==="questions", isTriage:S.view==="triage", isTraps:S.view==="traps",
+      isRecall:S.view==="recall", isMap:S.view==="map", isDrill:S.view==="drill",
+      isReview:S.view==="review", isRef:S.view==="ref",
+
+      facts:[{v:"60",k:"questions"},{v:"120 min",k:"time limit"},{v:"720 / 1000",k:"to pass"},{v:"4 of 6",k:"scenarios"},{v:"5",k:"content domains"},{v:"1 correct",k:"of 4 options"}],
+
+      qs:qs, qChips:qChips, noResults:qs.length===0,
+      search:S.search, onSearch:e=>this.setState({search:e.target.value}),
+      toggleAllLabel:S.allOpen?"Collapse all":"Expand all",
+      toggleAll:()=>{ const next=!S.allOpen; const o={}; if(next) list.forEach(q=>o[q.n]=true); this.setState({allOpen:next, open:o}); },
+
+      triage:triage, traps:traps,
+
+      playbooks:playbooks, pbTitle:String(pb.t).replace(/^★ /,""), pbGoal:this.rich(pb.goal),
+      pbDomLabel:"D"+pbDom+" · "+DOM_LABEL[pbDom],
+      pbDomStyle:{fontSize:"10.5px",fontWeight:600,padding:"3px 8px",borderRadius:"6px",color:"#fff",background:PAL["d"+pbDom]},
+      pbStages:pbStages,
+
+      diagChips:diagChips, diagTitle:diag.t, diagLead:this.rich(diag.lead), diagRows:diagRows,
+      diagHasSeq:!!seq,
+      stepLabel:S.step<0?"Start":(seq && S.step>=seq.length-1?"Replay":"Next ▸"),
+      stepStatus:seq ? (S.step<0 ? "Not started" : ("Step "+(S.step+1)+" of "+seq.length)) : "",
+      stepNext:()=>this.setState({step: seq && S.step>=seq.length-1 ? 0 : S.step+1}),
+      stepPrev:()=>this.setState({step: Math.max(-1, S.step-1)}),
+
+      drillModes:[["cards","Flashcards"],["spot","Spot the trap"]].map(([id,label])=>{
+        const on = S.drill===id;
+        return {label:label, style:{font:"inherit",fontSize:"12.5px",fontWeight:600,border:"1px solid "+(on?"transparent":"#dfe1ea"),
+          background:on?PAL.ink:"#fff",color:on?"#fff":"#4b5160",borderRadius:"99px",padding:"7px 15px",cursor:"pointer"},
+          go:()=>this.setState({drill:id, flipped:false, spot:id==="spot"?this.pickSpot():S.spot, spotAnswer:null})};
+      }),
+      drillScore: S.drill==="spot" ? (S.spotScore.r+" right · "+S.spotScore.w+" wrong") : (deck.length ? "Card "+(cardIdx+1)+" of "+deck.length : ""),
+      isCards:S.drill==="cards", isSpot:S.drill==="spot",
+      cardKind:card.kind, cardKindStyle:{fontSize:"10px",letterSpacing:".1em",textTransform:"uppercase",fontWeight:700,color:card.tone,
+        background:tint(card.tone,10),border:"1px solid "+tint(card.tone,26),borderRadius:"5px",padding:"3px 7px"},
+      cardCounter:deck.length?(cardIdx+1)+" / "+deck.length:"",
+      cardFront:this.rich(card.front), cardBack:card.back,
+      flipped:S.flipped, notFlipped:!S.flipped,
+      flip:()=>this.setState({flipped:!S.flipped}),
+      cardBtns:[
+        {label:"◂ Previous", k:"prev"},{label:S.flipped?"Hide":"Reveal", k:"flip"},{label:"Next ▸", k:"next"}
+      ].map(b=>({label:b.label,
+        style:{font:"inherit",fontSize:"12.5px",fontWeight:600,border:"1px solid "+(b.k==="flip"?"transparent":"#dfe1ea"),
+          background:b.k==="flip"?PAL.accent:"#fff",color:b.k==="flip"?"#fff":"#4b5160",borderRadius:"99px",padding:"8px 16px",cursor:"pointer",whiteSpace:"nowrap"},
+        go:()=>{ if(b.k==="flip") this.setState({flipped:!S.flipped});
+                 else this.setState({card:cardIdx + (b.k==="next"?1:-1), flipped:false}); }})),
+
+      spotN:spot.n, spotScenario:spot.scenario, spotStem:spot.stem, spotOpt:spot.opt,
+      spotUnanswered:spotAns==null, spotAnswered:spotAns!=null,
+      spotVerdict: spotAns==null ? "" : (spotRight ? "Right call" : "Not quite") + " — this option is " + (spot.correct?"the correct answer":"a trap"),
+      spotVerdictStyle:{marginTop:"20px",padding:"13px 15px",borderRadius:"11px",
+        background:tint(spotRight?PAL.good:PAL.bad,7),border:"1px solid "+tint(spotRight?PAL.good:PAL.bad,26),
+        color:spotRight?"oklch(0.4 0.12 150)":"oklch(0.45 0.17 22)"},
+      spotWhy:this.rich(spot.why),
+      spotSayGood:()=>{ const r = spot.correct; const sc={r:S.spotScore.r+(r?1:0),w:S.spotScore.w+(r?0:1)}; this.setState({spot:spot, spotAnswer:"good", spotScore:sc}); },
+      spotSayBad:()=>{ const r = !spot.correct; const sc={r:S.spotScore.r+(r?1:0),w:S.spotScore.w+(r?0:1)}; this.setState({spot:spot, spotAnswer:"bad", spotScore:sc}); },
+      spotNext:()=>this.setState({spot:this.pickSpot(), spotAnswer:null}),
+      spotOpenQ:()=>this.openQuestion(spot.n),
+
+      reviewItems:reviewItems, reviewEmpty:reviewItems.length===0,
+
+      refBlocks:refBlocks, refSearch:S.refSearch, onRefSearch:e=>this.setState({refSearch:e.target.value}),
+
+      hasRail:!!rail, noRail:!rail,
+      railKicker: rail ? rail.kicker : "Context rail",
+      railTitle: rail ? rail.title : "",
+      railSub: rail ? (rail.sub||"") : "",
+      railBody: rail ? rail.body : null,
+      railHasChips: !!(rail && rail.chips && rail.chips.length),
+      railChipLabel: rail ? (rail.chipLabel||"") : "",
+      railChips: rail && rail.chips ? rail.chips.map(c=>({label:c.label, go:c.act})) : [],
+      closeRail:()=>this.setRail(null),
+      railSuggest:[
+        {label:"Drill the ★ focus questions", go:()=>this.setState({view:"questions",tag:"focus",dom:"all"})},
+        {label:"Step through the agentic loop", go:()=>this.go("map",{diag:"loop",step:0})},
+        {label:"Run a spot-the-trap round", go:()=>this.go("drill",{drill:"spot",spot:this.pickSpot(),spotAnswer:null})}
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
