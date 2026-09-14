@@ -8,7 +8,7 @@ Live path once pushed:
 
 ## What changed from v1
 
-Same content, all of it — 66 worked questions, 28 decision principles, 38 traps,
+Same content, all of it — 78 worked questions, 32 decision principles, 44 traps,
 9 build playbooks, the quick-reference tables. New shell around it:
 
 - **Three-pane desktop layout** — section nav + domain filter on the left, reading

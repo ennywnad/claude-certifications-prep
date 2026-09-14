@@ -698,7 +698,8 @@ class Component extends DCLogic {
     let list = G.questions.slice();
     if(S.dom!=="all") list = list.filter(q=>q.d===+S.dom);
     if(S.tag==="focus") list = list.filter(q=>q.focus);
-    if(S.tag==="new") list = list.filter(q=>q.added);
+    if(S.tag==="new") list = list.filter(q=>q.added==="9/12");
+    if(S.tag==="new913") list = list.filter(q=>q.added==="9/13");
     if(S.tag==="queue") list = list.filter(q=>S.ratings[q.n] && S.ratings[q.n]!=="got");
     if(S.search.trim()){
       const s = S.search.toLowerCase();
@@ -752,7 +753,7 @@ class Component extends DCLogic {
     });
 
     const qChips = [
-      {id:"all",label:"All questions"},{id:"focus",label:"★ Focus areas"},{id:"new",label:"New · 9/12"},{id:"queue",label:"My queue"}
+      {id:"all",label:"All questions"},{id:"focus",label:"★ Focus areas"},{id:"new",label:"New · 9/12"},{id:"new913",label:"New · 9/13"},{id:"queue",label:"My queue"}
     ].map(c=>{
       const on = S.tag===c.id;
       return {label:c.label, style:{font:"inherit",fontSize:"12px",fontWeight:600,border:"1px solid "+(on?"transparent":"#dfe1ea"),

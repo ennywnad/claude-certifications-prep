@@ -2339,6 +2339,450 @@ const focusQuestions = [
    }
   ],
   "principle": "Keep exact transactional values in a persistent, never-summarized \"case facts\" block; summarize only narrative history; trim verbose tool results before they accumulate."
+ },
+ {
+  "n": 67,
+  "d": 4,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Validation & retry",
+  "scenario": "Structured Data Extraction",
+  "title": "Your invoice pipeline validates each extraction and retries failures with the validation error appended. Retries fix most date-format errors, but invoices that have no PO number fail all three retries every time. What should change?",
+  "correct": "B",
+  "opts": [
+   {
+    "l": "A",
+    "t": "Add a fourth retry with a firmer instruction to locate the PO number.",
+    "correct": false,
+    "why": "Retries can't create information the source doesn't contain. A firmer instruction just raises the pressure to satisfy the field — the likeliest outcome is a fabricated PO number."
+   },
+   {
+    "l": "B",
+    "t": "Make po_number nullable and route nulls to review, not retry.",
+    "correct": true,
+    "why": "Retry-with-feedback succeeds when the model misread something that is in the document. When the value is simply absent, no feedback helps. A nullable field lets the model report the absence honestly, and review handles it."
+   },
+   {
+    "l": "C",
+    "t": "Switch to tool use with a JSON schema so the field is enforced.",
+    "correct": false,
+    "why": "Tool use eliminates syntax errors, not missing information. A required field under a strict schema makes fabrication more likely, not less."
+   },
+   {
+    "l": "D",
+    "t": "Lower the temperature on retries so the model reads more carefully.",
+    "correct": false,
+    "why": "Sampling settings don't add information to the document. Deterministic output of a value that isn't there is still wrong."
+   }
+  ],
+  "principle": "Retry with error feedback fixes what the model got wrong (format, structure, placement). It can't fix what the source doesn't contain — make the field nullable and route it out."
+ },
+ {
+  "n": 68,
+  "d": 4,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Validation & retry",
+  "scenario": "Structured Data Extraction",
+  "title": "Extractions pass JSON schema validation every time, yet 4% of invoices have line items that don't sum to the stated total. Accounting only discovers this at month-end. What is the most effective fix?",
+  "correct": "C",
+  "opts": [
+   {
+    "l": "A",
+    "t": "Tighten the schema with minimum and maximum limits on each amount field.",
+    "correct": false,
+    "why": "Each amount is individually valid — the error is that they're inconsistent with each other. Range constraints check shape, not cross-field agreement."
+   },
+   {
+    "l": "B",
+    "t": "Ask the model to double-check its arithmetic before returning a result.",
+    "correct": false,
+    "why": "Prompt-only and probabilistic, and it leaves nothing for downstream code to check. You still find out at month-end."
+   },
+   {
+    "l": "C",
+    "t": "Extract calculated_total alongside stated_total and flag conflicts.",
+    "correct": true,
+    "why": "Tool use guarantees syntax; this is a semantic error. Explicit calculated_total, stated_total and conflict_detected fields turn an invisible inconsistency into something code can catch — then retry with the specific discrepancy, or route to review if the invoice itself doesn't add up."
+   },
+   {
+    "l": "D",
+    "t": "Retry every extraction twice and keep the result the retries agree on.",
+    "correct": false,
+    "why": "Triples cost, and agreement isn't correctness — a systematic misread repeats identically, and the vote hides it."
+   }
+  ],
+  "principle": "Schema / tool use = syntax guaranteed. Semantics (sums, cross-field consistency, field placement) need explicit validation fields — calculated vs stated, conflict_detected — so code can catch and route them."
+ },
+ {
+  "n": 69,
+  "d": 4,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Validation & retry",
+  "scenario": "Structured Data Extraction",
+  "title": "A validator rejects a contract extraction because effective_date (2024-03-01) is later than termination_date (2023-12-31). The source contract states both dates correctly; the model swapped them. What should the follow-up request contain?",
+  "correct": "A",
+  "opts": [
+   {
+    "l": "A",
+    "t": "The document, the failed extraction, and the specific validation error.",
+    "correct": true,
+    "why": "Everything self-correction needs: the source to re-check, what was produced, and exactly what's wrong. The information exists in the document, so a targeted retry is very likely to succeed."
+   },
+   {
+    "l": "B",
+    "t": "The original prompt again, so the model gets a clean second attempt.",
+    "correct": false,
+    "why": "A blind resample with no signal about what failed. It may swap the dates again — nothing tells it not to."
+   },
+   {
+    "l": "C",
+    "t": "A general reminder to be careful with dates, added to the system prompt.",
+    "correct": false,
+    "why": "Vague, not tied to this failure, and it changes every future request to fix one. The model still doesn't know which fields were wrong."
+   },
+   {
+    "l": "D",
+    "t": "Only the two date fields and the error, to keep the retry cheap.",
+    "correct": false,
+    "why": "Without the source document the model can't tell which date is correct — it can only guess or mechanically swap them back."
+   }
+  ],
+  "principle": "A good retry carries three things: the source document, the failed output, and the specific error. Info present but misread → retry works. Info absent → it won't."
+ },
+ {
+  "n": 70,
+  "d": 4,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Few-shot prompting",
+  "scenario": "Claude Code for Continuous Integration",
+  "title": "Your CI review prompt already has detailed written severity rules, but borderline cases are inconsistent — the same unchecked null dereference is 'critical' in one PR and 'minor' in the next. What is the most effective improvement?",
+  "correct": "B",
+  "opts": [
+   {
+    "l": "A",
+    "t": "Add more written rules covering each borderline case you've observed.",
+    "correct": false,
+    "why": "The rules are already detailed and still inconsistent. Enumerating the cases you've seen doesn't generalize to the next borderline case you haven't."
+   },
+   {
+    "l": "B",
+    "t": "Add 2–4 borderline examples showing why each got its severity.",
+    "correct": true,
+    "why": "Few-shot examples are the most effective fix when detailed instructions still produce inconsistent results. Showing the reasoning — why this is critical and not minor — lets the model generalize the judgment to novel cases instead of pattern-matching."
+   },
+   {
+    "l": "C",
+    "t": "Have the model output a confidence score and drop low-confidence items.",
+    "correct": false,
+    "why": "Hides the inconsistency instead of fixing the classification, and self-reported confidence isn't calibrated enough to be the filter."
+   },
+   {
+    "l": "D",
+    "t": "Run each review three times and keep the most common severity rating.",
+    "correct": false,
+    "why": "Triples cost; a majority vote of an inconsistent classifier is still inconsistent on exactly the borderline cases."
+   }
+  ],
+  "principle": "When detailed instructions still produce inconsistent output, add a few targeted examples of the ambiguous cases — with the reasoning for why one choice beat the plausible alternative."
+ },
+ {
+  "n": 71,
+  "d": 4,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Few-shot prompting",
+  "scenario": "Structured Data Extraction",
+  "title": "Your citation extractor works well on papers with a bibliography section, but returns empty citations for papers that use inline citations and for reports whose methodology is embedded in the body text. What should you add?",
+  "correct": "D",
+  "opts": [
+   {
+    "l": "A",
+    "t": "A longer instruction listing every citation format the extractor may see.",
+    "correct": false,
+    "why": "The instructions already describe what to extract and still fail. Listing formats tells the model what exists, not how to pull it out of an unfamiliar layout."
+   },
+   {
+    "l": "B",
+    "t": "A separate extraction prompt per document layout, picked by a classifier.",
+    "correct": false,
+    "why": "Overbuilt: adds a classification step with its own failure rate, and any layout the classifier hasn't seen falls through."
+   },
+   {
+    "l": "C",
+    "t": "A required, non-empty citations array so blank results are rejected.",
+    "correct": false,
+    "why": "Forces output on documents that legitimately have no citations — pressure to fill a required field is how extraction hallucinations start."
+   },
+   {
+    "l": "D",
+    "t": "Few-shot examples showing correct extraction from each structure type.",
+    "correct": true,
+    "why": "Examples demonstrate handling of varied structures — inline citations vs bibliographies, embedded vs sectioned methodology — which reduces empty results and hallucination, and generalizes to similar layouts you didn't include."
+   }
+  ],
+  "principle": "Few-shot examples teach structure-handling that instructions can't: show one correct extraction per layout type and the model generalizes to similar documents."
+ },
+ {
+  "n": 72,
+  "d": 4,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Few-shot prompting",
+  "scenario": "Claude Code for Continuous Integration",
+  "title": "Developers keep dismissing review findings that flag your team's intentional pattern of catching and logging errors at service boundaries. You want fewer false positives without the reviewer missing genuinely swallowed errors elsewhere. Best approach?",
+  "correct": "A",
+  "opts": [
+   {
+    "l": "A",
+    "t": "Add paired examples: the accepted boundary pattern vs a truly swallowed error.",
+    "correct": true,
+    "why": "Contrasting the acceptable pattern with the genuine issue it resembles teaches the distinction itself, so false positives drop while real swallowed errors still get flagged."
+   },
+   {
+    "l": "B",
+    "t": "Instruct the reviewer to skip every finding about error handling in the code.",
+    "correct": false,
+    "why": "Removes the false positives by removing the true positives too — genuinely swallowed errors are exactly what you wanted to keep catching."
+   },
+   {
+    "l": "C",
+    "t": "Add a single example of the boundary pattern, labeled as 'not an issue'.",
+    "correct": false,
+    "why": "One-sided: the model sees only what to suppress and tends to over-generalize to all catch-and-log code, including the real bugs."
+   },
+   {
+    "l": "D",
+    "t": "Only report error-handling findings when the model is highly confident.",
+    "correct": false,
+    "why": "Confidence-based filtering instead of explicit criteria; self-reported confidence isn't calibrated enough to separate the two patterns."
+   }
+  ],
+  "principle": "To cut false positives without losing recall, show contrast: an accepted pattern next to the genuine issue it resembles. One-sided examples teach suppression; paired examples teach the distinction."
+ },
+ {
+  "n": 73,
+  "d": 5,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Error propagation",
+  "scenario": "Multi-Agent Research System",
+  "title": "A search subagent's database query times out, and it returns {results: []} to the coordinator. The final report states that no published studies exist on the topic. What is the root-cause fix?",
+  "correct": "B",
+  "opts": [
+   {
+    "l": "A",
+    "t": "Have the coordinator re-run any subagent that returns an empty result.",
+    "correct": false,
+    "why": "The coordinator can't tell failures from real empties, so it wastes cycles re-running legitimate no-match searches and still learns nothing about what failed."
+   },
+   {
+    "l": "B",
+    "t": "Return a structured error with failure type, query, and partial results.",
+    "correct": true,
+    "why": "An access failure is not a valid empty result. With structured error context the coordinator can retry, try another source, or mark the gap — the root cause was the subagent collapsing a failure into a success."
+   },
+   {
+    "l": "C",
+    "t": "Warn the synthesis prompt that empty results might actually be errors.",
+    "correct": false,
+    "why": "Synthesis has no way to know which empties are errors, so it can only guess — and now it may doubt genuine no-match results too."
+   },
+   {
+    "l": "D",
+    "t": "Have the subagent retry until the query returns at least one result.",
+    "correct": false,
+    "why": "A genuinely empty search would loop forever, and forcing a non-empty result pushes toward irrelevant matches."
+   }
+  ],
+  "principle": "An access failure is not an empty result. Subagents report failure type, what was attempted, and partial results so the coordinator can retry, reroute, or mark the gap — never a silent []."
+ },
+ {
+  "n": 74,
+  "d": 5,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Error propagation",
+  "scenario": "Multi-Agent Research System",
+  "title": "Your web-search subagent hits occasional HTTP 503s, plus one source that returns 403 on every request. Right now every error goes straight to the coordinator, which is flooded and stalls. How should error handling be split?",
+  "correct": "C",
+  "opts": [
+   {
+    "l": "A",
+    "t": "Subagent retries both kinds; the coordinator hears only if retries run out.",
+    "correct": false,
+    "why": "The 403 is a permission failure — retrying it just burns time before reporting the same thing, late."
+   },
+   {
+    "l": "B",
+    "t": "Coordinator handles every error centrally, so recovery policy lives in one place.",
+    "correct": false,
+    "why": "That's the current design and the cause of the flood: transient blips the subagent could absorb are consuming coordinator attention."
+   },
+   {
+    "l": "C",
+    "t": "Retry 503s in the subagent; send the 403 up with attempts and partial results.",
+    "correct": true,
+    "why": "Transient failures are recovered locally; only what the subagent can't resolve propagates — with what it tried and what it did get, so the coordinator can choose an alternative."
+   },
+   {
+    "l": "D",
+    "t": "Subagent quietly skips any failing source and returns what it collected.",
+    "correct": false,
+    "why": "Suppresses the failure entirely, so the coordinator and final report never learn that a source is missing from coverage."
+   }
+  ],
+  "principle": "Recover locally from transient failures; propagate only what the subagent can't resolve — with what it attempted and partial results. Don't flood the coordinator, and don't hide the failure."
+ },
+ {
+  "n": 75,
+  "d": 5,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Error propagation",
+  "scenario": "Multi-Agent Research System",
+  "title": "Two of five regional subagents fail after exhausting recovery — sources for the EU and APAC markets were unavailable. The coordinator has well-supported findings for the other three regions. What should the final report do?",
+  "correct": "D",
+  "opts": [
+   {
+    "l": "A",
+    "t": "Hold the report until all five regions can be researched successfully.",
+    "correct": false,
+    "why": "Blocks delivery of valid findings on an unbounded wait for sources that may stay unavailable."
+   },
+   {
+    "l": "B",
+    "t": "Extrapolate EU and APAC from the other regions so the report is complete.",
+    "correct": false,
+    "why": "Presents inference as findings. The report looks complete precisely where it has no evidence."
+   },
+   {
+    "l": "C",
+    "t": "Deliver the three regions and leave EU and APAC out without comment.",
+    "correct": false,
+    "why": "A silent gap reads as full coverage — a reader may conclude there was nothing relevant to find in EU or APAC."
+   },
+   {
+    "l": "D",
+    "t": "Deliver the three regions, with coverage notes marking EU and APAC as gaps.",
+    "correct": true,
+    "why": "Partial results are useful when the gaps are explicit. Coverage annotations show which findings are well-supported and which areas are missing because sources were unavailable."
+   }
+  ],
+  "principle": "Partial results are fine; silent gaps aren't. Structure synthesis output with coverage annotations — which findings are well-supported, which areas are missing, and why."
+ },
+ {
+  "n": 76,
+  "d": 3,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Path-specific rules",
+  "scenario": "Code Generation with Claude Code",
+  "title": "Your team's test conventions (fixture naming, no network calls) must apply to every *.test.tsx file, but those files are spread across 40 feature directories. Where should the conventions live?",
+  "correct": "C",
+  "opts": [
+   {
+    "l": "A",
+    "t": "A CLAUDE.md in each feature directory containing the test conventions.",
+    "correct": false,
+    "why": "Forty copies that drift apart, and a subdirectory CLAUDE.md scopes by directory — not by file type."
+   },
+   {
+    "l": "B",
+    "t": "A clearly headed 'Testing conventions' section in the root CLAUDE.md file.",
+    "correct": false,
+    "why": "Works, but loads on every task — including the many that touch no test files — so the conventions compete for attention everywhere instead of appearing when relevant."
+   },
+   {
+    "l": "C",
+    "t": "A .claude/rules/ file with paths: [\"**/*.test.tsx\"] in its frontmatter.",
+    "correct": true,
+    "why": "A glob-scoped rule applies by file type regardless of directory, and loads only when Claude is working with matching files."
+   },
+   {
+    "l": "D",
+    "t": "A skill named test-conventions that developers invoke before writing tests.",
+    "correct": false,
+    "why": "On-demand: it only applies when someone remembers to invoke it. Conventions should apply automatically."
+   }
+  ],
+  "principle": "Conventions tied to a file type spread across the codebase → .claude/rules/ with a paths glob. Subdirectory CLAUDE.md scopes by directory; root CLAUDE.md loads for everything."
+ },
+ {
+  "n": 77,
+  "d": 3,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Path-specific rules",
+  "scenario": "Developer Productivity with Claude",
+  "title": "You moved Terraform conventions out of the root CLAUDE.md into .claude/rules/terraform.md with paths: [\"terraform/**/*\"] in its frontmatter. A developer asks Claude to rename a variable in src/app.ts. Which statement is correct?",
+  "correct": "A",
+  "opts": [
+   {
+    "l": "A",
+    "t": "The Terraform rule doesn't load, since no file in play matches its glob.",
+    "correct": true,
+    "why": "Path-scoped rules load only when Claude works with files matching the glob. That conditional loading is the whole point of moving them out of CLAUDE.md."
+   },
+   {
+    "l": "B",
+    "t": "The rule loads on every request, like CLAUDE.md, since it's under .claude/.",
+    "correct": false,
+    "why": "That's true of rules files without a paths field. Adding paths is what makes loading conditional."
+   },
+   {
+    "l": "C",
+    "t": "The rule loads only if the developer invokes it with a slash command.",
+    "correct": false,
+    "why": "Confuses rules with skills and slash commands. Rules load automatically when their glob matches; nobody invokes them."
+   },
+   {
+    "l": "D",
+    "t": "The rule loads at session start; the glob only controls where it's shown.",
+    "correct": false,
+    "why": "The glob controls when the rule enters context, not how it's displayed."
+   }
+  ],
+  "principle": "Rules with a paths glob load only when Claude works with matching files; rules without paths load always, like CLAUDE.md."
+ },
+ {
+  "n": 78,
+  "d": 3,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Path-specific rules",
+  "scenario": "Code Generation with Claude Code",
+  "title": "Your 900-line root CLAUDE.md mixes API, database-migration and React conventions. Claude keeps applying API error-handling rules while editing React components. What restructuring best fixes this?",
+  "correct": "D",
+  "opts": [
+   {
+    "l": "A",
+    "t": "Move each area into @import files referenced from the root CLAUDE.md.",
+    "correct": false,
+    "why": "@import organizes the files, but everything imported still loads every session — the API rules are still in context while editing components."
+   },
+   {
+    "l": "B",
+    "t": "Add a note at the top of CLAUDE.md saying which sections apply where.",
+    "correct": false,
+    "why": "Everything still loads, and scoping now depends on the model filtering correctly — the same failure you're already seeing."
+   },
+   {
+    "l": "C",
+    "t": "Create a subagent per area, each with a copy of its relevant section.",
+    "correct": false,
+    "why": "Overbuilt, and conventions need to apply in the session doing the editing, not in separate agents."
+   },
+   {
+    "l": "D",
+    "t": "Split into .claude/rules/ files scoped by paths globs for each area.",
+    "correct": true,
+    "why": "Changes what loads, not just how it's organized: API conventions load for API files, React conventions for components, migration rules for migrations."
+   }
+  ],
+  "principle": "@import organizes files but still loads everything. Path-scoped rules change what loads. When conventions bleed across areas, split them into .claude/rules/ files with paths globs."
  }
 ];
 questions.push(...focusQuestions);
@@ -2632,6 +3076,67 @@ refBlocks.push(
  ["Test-driven iteration","Write the suite first, then iterate by sharing specific failures."],
  ["Combination","Plan mode to investigate and design → direct execution to implement the approved approach."],
  ["Anti-pattern","'Plan mode only if complexity emerges' when the prompt already states 45 files and two strategies."]
+]});
+
+
+
+/* ===== GAP-FILL 9/13: validation & retry, few-shot, error propagation, path rules ===== */
+principles.push(
+{c:"--d4",added:"9/13",t:"★ Retries fix misreads, not missing information",
+ body:"<b>Retry with error feedback</b> works when the information is in the source and the model got it wrong — format mismatches, swapped fields, structural errors. Send the <b>document</b>, the <b>failed extraction</b>, and the <b>specific validation error</b>. It does <i>not</i> work when the information is absent: the model fails again or fabricates a value to satisfy a required field — make that field nullable and route it to review. Tool use with a JSON schema eliminates <b>syntax</b> errors only; totals that don't sum and values in the wrong field are <b>semantic</b> errors that need explicit checks (<code>calculated_total</code> vs <code>stated_total</code>, <code>conflict_detected</code>).",
+ test:"Is the information actually in the document? Does the retry say exactly what failed? Is this a syntax problem (schema fixes it) or a semantic one (needs a validation field)?"},
+{c:"--d4",added:"9/13",t:"★ Few-shot beats more rules when judgment is inconsistent",
+ body:"When detailed instructions still produce inconsistent output, more rules rarely help. Add <b>2–4 targeted examples</b> of the ambiguous cases, each showing <i>why</i> one choice beat the plausible alternative — that reasoning is what lets the model generalize to cases you didn't write down. Use examples to lock output format (location, issue, severity, suggested fix), to show extraction from varied layouts (inline citations vs bibliography), and to cut false positives by <b>contrasting</b> an accepted pattern with the genuine issue it resembles.",
+ test:"Are my instructions already detailed? Do my examples show reasoning, or just labels? Do they contrast the acceptable case with the real issue, or show only one side?"},
+{c:"--d5",added:"9/13",t:"★ Failures travel up with context; transient blips don't travel at all",
+ body:"Subagents <b>recover locally</b> from transient failures (timeouts, 503s) and <b>propagate</b> only what they can't resolve — with the failure type, what was attempted, and any partial results. An <b>access failure is not an empty result</b>: returning <code>[]</code> after a timeout turns an outage into a false finding. At the synthesis end, deliver what you have with <b>coverage annotations</b> — which findings are well-supported, and which areas have gaps because sources were unavailable.",
+ test:"Could the coordinator tell a failed search from a search that found nothing? Does the final report say what it couldn't cover?"},
+{c:"--d3",added:"9/13",t:"★ Scope conventions by path, not by where CLAUDE.md sits",
+ body:"<code>.claude/rules/*.md</code> files with a <code>paths:</code> glob in their YAML frontmatter load <b>only when Claude works with matching files</b> — <code>**/*.test.tsx</code> for every test file wherever it lives, <code>terraform/**/*</code> for one area. Rules without <code>paths</code> load always, like CLAUDE.md. A subdirectory CLAUDE.md scopes by <i>directory</i>, which breaks when one file type is spread across the codebase. <code>@import</code> modularizes CLAUDE.md but still loads everything.",
+ test:"Should this convention apply by file type or area (paths glob), always (CLAUDE.md), or on demand (skill)? Am I reorganizing files, or actually changing what loads?"}
+);
+
+traps.push(
+{added:"9/13",t:"★ Retrying when the information isn't in the document",
+ good:"Nullable field + route to review. Retries are for misreads, not absences.",
+ bad:"A fourth retry with a firmer instruction — until the model invents a PO number to satisfy the required field."},
+{added:"9/13",t:"★ Trusting schema validation for correctness",
+ good:"Tool use guarantees shape. Add calculated_total vs stated_total and conflict_detected for semantic checks.",
+ bad:"'It passed the JSON schema, so the data is right' — while line items silently fail to sum."},
+{added:"9/13",t:"★ Retrying without the specific error",
+ good:"The follow-up includes the source document, the failed extraction, and the exact validation error.",
+ bad:"Re-sending the original prompt for a 'clean attempt', or sending only the failing fields without the document."},
+{added:"9/13",t:"★ One-sided few-shot examples",
+ good:"Pair the accepted pattern with the genuine issue it resembles, and show the reasoning for each.",
+ bad:"A single 'not an issue' example — the model learns to suppress the whole category, real bugs included."},
+{added:"9/13",t:"★ Returning [] when the search failed",
+ good:"Structured error: failure type, query attempted, partial results. The coordinator decides what to do.",
+ bad:"Collapsing a timeout into an empty result, so the report confidently says nothing exists."},
+{added:"9/13",t:"★ Duplicating conventions into every directory",
+ good:"One .claude/rules/ file with a paths glob such as **/*.test.tsx.",
+ bad:"Forty subdirectory CLAUDE.md copies that drift apart, or one always-loaded root section read on every unrelated task."}
+);
+
+refBlocks.push(
+{added:"9/13",h:"★ Validation, retry & few-shot",rows:[
+ ["Retry works","Info is in the source and the model misread it — format mismatch, swapped fields, wrong structure."],
+ ["Retry fails","Info is absent from the source. Make the field nullable and route to review."],
+ ["Retry payload","Source document + failed extraction + the specific validation error."],
+ ["Syntax errors","Eliminated by tool use with a JSON schema."],
+ ["Semantic errors","Sums, cross-field consistency, placement — need explicit checks: calculated_total vs stated_total, conflict_detected."],
+ ["Few-shot count","2–4 targeted examples of the ambiguous cases, each with the reasoning for the choice."],
+ ["Few-shot for format","Show the exact output shape — location, issue, severity, suggested fix."],
+ ["Few-shot for false positives","Contrast the accepted pattern with the genuine issue it resembles."]
+]},
+{added:"9/13",h:"★ Error propagation & path-specific rules",rows:[
+ ["Transient (timeout, 503)","Recover locally in the subagent."],
+ ["Unresolvable (403, retries exhausted)","Propagate: failure type, what was attempted, partial results, alternatives."],
+ ["Access failure vs empty","A failed query is not 'found nothing' — the distinction must reach the coordinator."],
+ ["Synthesis gaps","Deliver partial results with coverage annotations; never extrapolate or omit silently."],
+ [".claude/rules/ with paths","Loads only when Claude works with files matching the glob."],
+ [".claude/rules/ without paths","Loads always, like CLAUDE.md."],
+ ["Subdirectory CLAUDE.md","Scoped by directory — breaks when one file type spreads across many directories."],
+ ["@import","Modularizes CLAUDE.md; everything imported still loads."]
 ]});
 
 
