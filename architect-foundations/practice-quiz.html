@@ -151,7 +151,7 @@
   <div class="empty" id="empty" style="display:none">No questions in this domain.</div>
 
   <footer>
-    24 original practice questions + a 66-question ★ Focus set targeting the objectives scored below 80% on the 8/12/2026 attempt — 13 added 9/12 from reader feedback (tagged New · 9/12), and 12 added 9/13 for task statements neither score report tested directly (tagged New · 9/13). Grounded in Exam Guide v0.2. D1 Agentic Architecture · D2 Tool &amp; MCP · D3 Claude Code · D4 Prompt &amp; Output · D5 Context &amp; Reliability.
+    24 original practice questions + a 74-question ★ Focus set targeting the objectives scored below 80% on the 8/12/2026 attempt — 13 added 9/12 from reader feedback (tagged New · 9/12), and 20 added 9/13 for task statements neither score report tested directly and for orchestration wiring (tagged New · 9/13). Grounded in Exam Guide v0.2. D1 Agentic Architecture · D2 Tool &amp; MCP · D3 Claude Code · D4 Prompt &amp; Output · D5 Context &amp; Reliability.
   </footer>
 </div>
 
@@ -1533,7 +1533,128 @@ const Q=[
   {l:"D",body:"Split into .claude/rules/ files scoped by paths globs for each area.",correct:true,
    why:"Changes what loads, not just how it's organized: API conventions load for API files, React conventions for components, migration rules for migrations."}
  ],
- principle:"@import organizes files but still loads everything. Path-scoped rules change what loads. When conventions bleed across areas, split them into .claude/rules/ files with paths globs."}
+ principle:"@import organizes files but still loads everything. Path-scoped rules change what loads. When conventions bleed across areas, split them into .claude/rules/ files with paths globs."},
+
+/* --- 9/13: orchestration wiring — coordinator ↔ subagent --- */
+{d:1,focus:true,added:"9/13",obj:"Orchestration wiring",scenario:"Multi-Agent Research System",
+ title:"Coordinator output reads: \"I'll have the web search subagent gather recent sources on this.\" The final report then cites several sources — but tracing shows no subagent ever ran and the coordinator emitted no tool_use blocks at all. Most likely cause?",
+ correct:"C",
+ opts:[
+  {l:"A",body:"The search subagent's AgentDefinition has too vague a description.",correct:false,
+   why:"A vague description causes the coordinator to pick the wrong subagent — but it would still emit a Task tool_use block. The trace shows none."},
+  {l:"B",body:"The loop stopped on end_turn before the subagent could finish.",correct:false,
+   why:"No subagent ever started, and end_turn is the correct termination signal. The problem is upstream of the loop."},
+  {l:"C",body:"The coordinator's allowedTools doesn't include \"Task\".",correct:true,
+   why:"Spawning a subagent is a tool call. Without Task in the coordinator's tool list it cannot emit that tool_use block, so it narrates the delegation in text and carries on — here, inventing the sources."},
+  {l:"D",body:"tool_choice is \"auto\", so the model is free to skip the subagent.",correct:false,
+   why:"auto does allow a text reply, but no tool_choice setting lets a model call a tool that isn't in its tool list. The missing capability is the root cause."}
+ ],
+ principle:"No tool_use block means no tool call. When an agent describes a delegation it never makes, check that agent's tool list first — a coordinator needs \"Task\" in allowedTools to spawn anything."},
+
+{d:1,focus:true,added:"9/13",obj:"Orchestration wiring",scenario:"Multi-Agent Research System",
+ title:"The coordinator correctly spawns a search subagent — the Task tool_use and its tool_result are both in the trace. The subagent's reply says \"Searching the web for 2025 market data…\" and then lists figures, but the subagent's own trace contains no tool calls. What should you check first?",
+ correct:"A",
+ opts:[
+  {l:"A",body:"Whether the subagent's AgentDefinition tools include web search.",correct:true,
+   why:"Delegation worked; the break is one level down. A subagent can only use the tools its own AgentDefinition grants. Missing web search → it narrates a search and the figures are invented."},
+  {l:"B",body:"Whether the coordinator's allowedTools include web search.",correct:false,
+   why:"The subagent's capabilities come from its own definition, not the coordinator's. Giving the coordinator web search breaks role scoping and doesn't fix the subagent."},
+  {l:"C",body:"Whether the subagent's prompt included the coordinator's history.",correct:false,
+   why:"Subagents never inherit history, and context gaps cause wrong or thin answers — not a narrated tool call with no tool_use block."},
+  {l:"D",body:"Whether the coordinator spawned its Task calls in parallel.",correct:false,
+   why:"Parallel vs sequential spawning changes latency, not whether a subagent can call its tools."}
+ ],
+ principle:"Check tool access at the level where the narration happens: coordinator narrating delegation → Task in allowedTools; subagent narrating a search → the tool in its AgentDefinition."},
+
+{d:1,focus:true,added:"9/13",obj:"Orchestration wiring",scenario:"Multi-Agent Research System",
+ title:"Which evidence in a trace tells you an agent is missing tool access, rather than having a broken agentic loop?",
+ correct:"B",
+ opts:[
+  {l:"A",body:"A tool_use block was emitted, but the loop returned without running it.",correct:false,
+   why:"That's the loop: it isn't branching on stop_reason \"tool_use\". The model had the tool and called it."},
+  {l:"B",body:"The model described calling the tool, but no tool_use block exists.",correct:true,
+   why:"A model can only emit tool_use for tools in its request. Text about a call with no block behind it points at the tool list, not the loop."},
+  {l:"C",body:"The tool ran, but its tool_result never reached the next request.",correct:false,
+   why:"Also the loop: results must be appended to messages as a user turn with the matching tool_use_id, or the model never sees them."},
+  {l:"D",body:"The tool ran and returned an error that the agent then ignored.",correct:false,
+   why:"Error handling — the call happened. Structured error responses fix this, not tool access."}
+ ],
+ principle:"Read the trace, not the prose. No tool_use block → tool access. tool_use not executed → loop not branching on stop_reason. Executed but ignored → tool_result not appended."},
+
+{d:1,focus:true,added:"9/13",obj:"Orchestration wiring",scenario:"Multi-Agent Research System",
+ title:"In your custom agentic loop, the coordinator's response contains a Task tool_use block with stop_reason \"tool_use\", plus the text \"Delegating to the research agent now…\". Your app shows that text to the user as the final answer and stops. What's wrong?",
+ correct:"D",
+ opts:[
+  {l:"A",body:"\"Task\" is missing from the coordinator's allowedTools.",correct:false,
+   why:"Then there'd be no Task tool_use block. The model called the tool; your code didn't run it."},
+  {l:"B",body:"The research subagent's AgentDefinition has no system prompt.",correct:false,
+   why:"Never reached — the subagent was never spawned, because the call was never executed."},
+  {l:"C",body:"tool_choice should be \"any\" so the model must call a tool.",correct:false,
+   why:"The model already called a tool. Forcing tool use doesn't make your loop execute it."},
+  {l:"D",body:"The loop doesn't branch on stop_reason, so Task never executes.",correct:true,
+   why:"stop_reason \"tool_use\" means run the requested tools and loop again. Treating any response with text as final is the anti-pattern that turns a real call into narration."}
+ ],
+ principle:"Loop while stop_reason is \"tool_use\"; stop on \"end_turn\". A response can contain both text and tool_use blocks — the text is not the answer when a tool call is pending."},
+
+{d:1,focus:true,added:"9/13",obj:"Orchestration wiring",scenario:"Multi-Agent Research System",
+ title:"You add a citation-checker AgentDefinition, but the coordinator keeps sending citation checks to the general research subagent, even though \"Task\" is in its allowedTools. What is the most likely fix?",
+ correct:"B",
+ opts:[
+  {l:"A",body:"Give citation-checker every tool the research subagent already has.",correct:false,
+   why:"Tools don't drive which subagent the coordinator picks, and broadening them breaks role scoping."},
+  {l:"B",body:"Write a description for citation-checker saying exactly when to use it.",correct:true,
+   why:"The AgentDefinition description is what the coordinator reads when choosing a subagent — the same way tool descriptions drive tool selection. Vague or overlapping descriptions cause misrouting."},
+  {l:"C",body:"Tell citation-checker in its own system prompt to handle citations.",correct:false,
+   why:"The coordinator never sees a subagent's system prompt when it decides whom to call; that prompt only shapes the subagent once it's running."},
+  {l:"D",body:"Remove Task from allowedTools and have the coordinator check citations.",correct:false,
+   why:"Removes delegation entirely to fix a routing problem, and puts specialist work back in the coordinator's context."}
+ ],
+ principle:"An AgentDefinition has three parts that matter: a description (how the coordinator chooses it), a system prompt (how it behaves), and tools (what it can do). Misrouting is a description problem."},
+
+{d:1,focus:true,added:"9/13",obj:"Orchestration wiring",scenario:"Multi-Agent Research System",
+ title:"The coordinator tells the search subagent: \"1. Search for the query. 2. Open the top 3 results. 3. Summarize each in 100 words.\" When the top 3 results are low quality, the report misses the most relevant sources. What change best fits?",
+ correct:"A",
+ opts:[
+  {l:"A",body:"State the goal and quality criteria; let the subagent choose its steps.",correct:true,
+   why:"Goal-oriented delegation lets the subagent adapt — dig past weak results, reformulate queries — while structured findings with sources keep the coordinator informed and in control."},
+  {l:"B",body:"Extend the procedure so the subagent opens the top 10 results instead.",correct:false,
+   why:"Still a fixed script. It costs more on easy queries and still fails when the good sources sit at result 14."},
+  {l:"C",body:"Add a step to rank results by domain authority before opening any.",correct:false,
+   why:"Another fixed step. It helps one failure mode and still leaves the subagent unable to adapt to what it finds."},
+  {l:"D",body:"Have the coordinator approve each result before the subagent opens it.",correct:false,
+   why:"Pulls every micro-decision back to the hub, adding round trips and coordinator context for no gain in quality."}
+ ],
+ principle:"Delegate the goal, not the procedure: state what a good result looks like and the scope boundary, let the subagent choose its steps, and require structured findings back so the coordinator keeps visibility."},
+
+{d:1,focus:true,added:"9/13",obj:"Orchestration wiring",scenario:"Multi-Agent Research System",
+ title:"Three search subagents return findings as prose. The synthesis subagent's reports can't cite sources or dates, and on every run it asks the coordinator for URLs, adding round trips. What's the best fix?",
+ correct:"D",
+ opts:[
+  {l:"A",body:"Give the synthesis subagent web search so it can look up the URLs.",correct:false,
+   why:"Duplicates the searchers' work, breaks role scoping, and may cite different sources than the findings came from."},
+  {l:"B",body:"Let the synthesis subagent inherit the coordinator's conversation.",correct:false,
+   why:"Subagents don't inherit context — and the coordinator's history holds the same prose, so the metadata still wouldn't be there."},
+  {l:"C",body:"Have each search subagent add a bibliography paragraph to its prose.",correct:false,
+   why:"Loses the claim-to-source link: synthesis can't tell which claim came from which source or when it was published."},
+  {l:"D",body:"Pass findings as structured data with URL, title and date per claim.",correct:true,
+   why:"Complete context in the prompt — findings plus source metadata — means synthesis can attribute every claim without returning to the coordinator."}
+ ],
+ principle:"A subagent prompt must be complete: the findings, as structured data, with the source metadata (URL, document, date) needed to finish the task without asking the coordinator for more."},
+
+{d:1,focus:true,added:"9/13",obj:"Orchestration wiring",scenario:"Multi-Agent Research System",
+ title:"Mid-task, the search subagent finds a 90-page PDF that needs the analysis subagent's document tools. How should that hand-off happen?",
+ correct:"C",
+ opts:[
+  {l:"A",body:"Give the search subagent the Task tool so it can spawn the analyzer.",correct:false,
+   why:"Subagents don't spawn their own subagents — and a spawn the coordinator doesn't know about takes routing, error handling and aggregation away from the hub."},
+  {l:"B",body:"Have both subagents watch a shared scratchpad file for new work.",correct:false,
+   why:"Peer-to-peer coordination with no owner: no one tracks the work, handles a failure, or knows the result is ready."},
+  {l:"C",body:"Return the PDF reference to the coordinator, which delegates analysis.",correct:true,
+   why:"Hub-and-spoke: all communication goes through the coordinator, which keeps observability, consistent error handling and control over what runs next."},
+  {l:"D",body:"Give the search subagent the document tools too, so it can finish.",correct:false,
+   why:"Breaks role scoping; a searcher with document tools makes worse tool choices, and its context fills with a 90-page PDF."}
+ ],
+ principle:"Subagents report to the coordinator only — no peer-to-peer calls, no nested spawning. New work discovered mid-task goes back to the hub to delegate."}
 
 ];
 

@@ -8,7 +8,7 @@ Live path once pushed:
 
 ## What changed from v1
 
-Same content, all of it — 78 worked questions, 32 decision principles, 44 traps,
+Same content, all of it — 86 worked questions, 34 decision principles, 48 traps,
 9 build playbooks, the quick-reference tables. New shell around it:
 
 - **Three-pane desktop layout** — section nav + domain filter on the left, reading
@@ -20,7 +20,7 @@ Same content, all of it — 78 worked questions, 32 decision principles, 44 trap
   the answer it forces on the right.
 - **Task pipelines** replace the numbered step lists: each playbook is a stage grid;
   tapping a stage opens the full step plus the flags, paths and fields it touches.
-- **Visual map redrawn and clickable** — 13 diagrams rebuilt as real layout instead
+- **Visual map redrawn and clickable** — 14 diagrams rebuilt as real layout instead
   of fixed-width SVG, so they reflow on a phone. Every block opens its detail in the
   rail; the loop, hook lifecycle, extraction and escalation diagrams step through.
 - **Drill** — flashcards over the principles and traps, and a spot-the-trap mode that
