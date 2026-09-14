@@ -120,6 +120,25 @@ window.DIAGRAMS = [
   ]
 },
 {
+  id:"wiring", t:"Orchestration wiring — where a delegation breaks", added:"9/13",
+  tags:["task","allowedtools","agentdefinition","tool_use","narrat","delegat","spawn","subagent","coordinator","tool_result"],
+  lead:"Spawning a subagent is just a tool call, so it fails the way tool calls fail. Follow one delegation end to end, and learn to read the trace instead of the prose: an agent that <b>narrates</b> a call with no <code>tool_use</code> block behind it is missing the tool, not misbehaving.",
+  seq:["w1","w2","w3","w4","w5"],
+  rows:[
+    {label:"One delegation, end to end — every arrow is a tool call or a tool result", kind:"flow", nodes:[
+      {id:"w1", t:"1 · coordinator turn", s:"allowedTools includes \"Task\"", tone:"d1", d:"Spawning a subagent is a tool call like any other. <b>Breaks if:</b> Task isn't in the coordinator's allowedTools — it can't emit the call, so it narrates \"I'll delegate this…\" and carries on, often inventing results. No tool_use block appears in the trace."},
+      {id:"w2", t:"2 · tool_use: Task", s:"subagent_type + prompt · stop_reason \"tool_use\"", tone:"d1", d:"The coordinator's response carries a Task tool_use block. For parallel work, emit several in ONE response. <b>Breaks if:</b> a custom loop doesn't branch on stop_reason — the Task call is returned to the user as if the text were the answer."},
+      {id:"w3", t:"3 · AgentDefinition", s:"description · system prompt · tools", tone:"d2", d:"The <b>description</b> is how the coordinator chooses this subagent; the <b>system prompt</b> shapes how it behaves; <b>tools</b> define what it can do. <b>Breaks if:</b> descriptions are vague or overlap — the coordinator routes work to the wrong subagent."},
+      {id:"w4", t:"4 · subagent loop", s:"context = the prompt only · tool_use: web_search", tone:"d2", d:"A fresh, isolated context: only what the Task prompt carried. <b>Breaks if:</b> web search isn't in its AgentDefinition tools (it narrates a search and invents figures), or the prompt lacked prior findings and source metadata (thin, unattributable output)."},
+      {id:"w5", t:"5 · tool_result → coordinator", s:"structured findings + sources", tone:"good", d:"The subagent's final output returns to the coordinator as a tool_result. <b>Breaks if:</b> a custom loop doesn't append the result to the next request — the coordinator never sees what came back."}
+    ]},
+    {label:"", kind:"grid", nodes:[
+      {id:"trace", t:"Read the trace, not the prose", s:"no tool_use block → that agent's tool list · tool_use never ran → loop ignores stop_reason · ran, result ignored → tool_result not appended · wrong specialist → AgentDefinition description", tone:"bad", d:"Missing tool access is never fixed by prompt wording — \"You MUST use the search agent\" can't create a tool. Fix the level that narrates: coordinator → Task in allowedTools; subagent → the tool in its own AgentDefinition."},
+      {id:"carry", t:"What the Task prompt must carry", s:"✓ goal, quality criteria, scope boundary · ✓ prior findings as structured data + source URL / date · ✗ a click-by-click procedure · ✗ assuming it sees the coordinator's history", tone:"good", d:"Delegate the goal, not the procedure, so the subagent can adapt; require structured findings back so the coordinator keeps visibility. Topology: subagents report to the coordinator only — no peer-to-peer calls, no nested spawning."}
+    ]}
+  ]
+},
+{
   id:"hooks", t:"Hook lifecycle — where enforcement actually happens",
   tags:["hook","PreToolUse","PostToolUse","Stop hook","enforce","format","lint","block","permissions"],
   lead:"Hooks sit on the tool-execution boundary inside the loop. Timing is the whole exam question: PreToolUse can block, PostToolUse sees the result, Stop runs once at the end.",

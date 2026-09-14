@@ -2783,6 +2783,302 @@ const focusQuestions = [
    }
   ],
   "principle": "@import organizes files but still loads everything. Path-scoped rules change what loads. When conventions bleed across areas, split them into .claude/rules/ files with paths globs."
+ },
+ {
+  "n": 79,
+  "d": 1,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Orchestration wiring",
+  "scenario": "Multi-Agent Research System",
+  "title": "Coordinator output reads: \"I'll have the web search subagent gather recent sources on this.\" The final report then cites several sources — but tracing shows no subagent ever ran and the coordinator emitted no tool_use blocks at all. Most likely cause?",
+  "correct": "C",
+  "opts": [
+   {
+    "l": "A",
+    "t": "The search subagent's AgentDefinition has too vague a description.",
+    "correct": false,
+    "why": "A vague description causes the coordinator to pick the wrong subagent — but it would still emit a Task tool_use block. The trace shows none."
+   },
+   {
+    "l": "B",
+    "t": "The loop stopped on end_turn before the subagent could finish.",
+    "correct": false,
+    "why": "No subagent ever started, and end_turn is the correct termination signal. The problem is upstream of the loop."
+   },
+   {
+    "l": "C",
+    "t": "The coordinator's allowedTools doesn't include \"Task\".",
+    "correct": true,
+    "why": "Spawning a subagent is a tool call. Without Task in the coordinator's tool list it cannot emit that tool_use block, so it narrates the delegation in text and carries on — here, inventing the sources."
+   },
+   {
+    "l": "D",
+    "t": "tool_choice is \"auto\", so the model is free to skip the subagent.",
+    "correct": false,
+    "why": "auto does allow a text reply, but no tool_choice setting lets a model call a tool that isn't in its tool list. The missing capability is the root cause."
+   }
+  ],
+  "principle": "No tool_use block means no tool call. When an agent describes a delegation it never makes, check that agent's tool list first — a coordinator needs \"Task\" in allowedTools to spawn anything."
+ },
+ {
+  "n": 80,
+  "d": 1,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Orchestration wiring",
+  "scenario": "Multi-Agent Research System",
+  "title": "The coordinator correctly spawns a search subagent — the Task tool_use and its tool_result are both in the trace. The subagent's reply says \"Searching the web for 2025 market data…\" and then lists figures, but the subagent's own trace contains no tool calls. What should you check first?",
+  "correct": "A",
+  "opts": [
+   {
+    "l": "A",
+    "t": "Whether the subagent's AgentDefinition tools include web search.",
+    "correct": true,
+    "why": "Delegation worked; the break is one level down. A subagent can only use the tools its own AgentDefinition grants. Missing web search → it narrates a search and the figures are invented."
+   },
+   {
+    "l": "B",
+    "t": "Whether the coordinator's allowedTools include web search.",
+    "correct": false,
+    "why": "The subagent's capabilities come from its own definition, not the coordinator's. Giving the coordinator web search breaks role scoping and doesn't fix the subagent."
+   },
+   {
+    "l": "C",
+    "t": "Whether the subagent's prompt included the coordinator's history.",
+    "correct": false,
+    "why": "Subagents never inherit history, and context gaps cause wrong or thin answers — not a narrated tool call with no tool_use block."
+   },
+   {
+    "l": "D",
+    "t": "Whether the coordinator spawned its Task calls in parallel.",
+    "correct": false,
+    "why": "Parallel vs sequential spawning changes latency, not whether a subagent can call its tools."
+   }
+  ],
+  "principle": "Check tool access at the level where the narration happens: coordinator narrating delegation → Task in allowedTools; subagent narrating a search → the tool in its AgentDefinition."
+ },
+ {
+  "n": 81,
+  "d": 1,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Orchestration wiring",
+  "scenario": "Multi-Agent Research System",
+  "title": "Which evidence in a trace tells you an agent is missing tool access, rather than having a broken agentic loop?",
+  "correct": "B",
+  "opts": [
+   {
+    "l": "A",
+    "t": "A tool_use block was emitted, but the loop returned without running it.",
+    "correct": false,
+    "why": "That's the loop: it isn't branching on stop_reason \"tool_use\". The model had the tool and called it."
+   },
+   {
+    "l": "B",
+    "t": "The model described calling the tool, but no tool_use block exists.",
+    "correct": true,
+    "why": "A model can only emit tool_use for tools in its request. Text about a call with no block behind it points at the tool list, not the loop."
+   },
+   {
+    "l": "C",
+    "t": "The tool ran, but its tool_result never reached the next request.",
+    "correct": false,
+    "why": "Also the loop: results must be appended to messages as a user turn with the matching tool_use_id, or the model never sees them."
+   },
+   {
+    "l": "D",
+    "t": "The tool ran and returned an error that the agent then ignored.",
+    "correct": false,
+    "why": "Error handling — the call happened. Structured error responses fix this, not tool access."
+   }
+  ],
+  "principle": "Read the trace, not the prose. No tool_use block → tool access. tool_use not executed → loop not branching on stop_reason. Executed but ignored → tool_result not appended."
+ },
+ {
+  "n": 82,
+  "d": 1,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Orchestration wiring",
+  "scenario": "Multi-Agent Research System",
+  "title": "In your custom agentic loop, the coordinator's response contains a Task tool_use block with stop_reason \"tool_use\", plus the text \"Delegating to the research agent now…\". Your app shows that text to the user as the final answer and stops. What's wrong?",
+  "correct": "D",
+  "opts": [
+   {
+    "l": "A",
+    "t": "\"Task\" is missing from the coordinator's allowedTools.",
+    "correct": false,
+    "why": "Then there'd be no Task tool_use block. The model called the tool; your code didn't run it."
+   },
+   {
+    "l": "B",
+    "t": "The research subagent's AgentDefinition has no system prompt.",
+    "correct": false,
+    "why": "Never reached — the subagent was never spawned, because the call was never executed."
+   },
+   {
+    "l": "C",
+    "t": "tool_choice should be \"any\" so the model must call a tool.",
+    "correct": false,
+    "why": "The model already called a tool. Forcing tool use doesn't make your loop execute it."
+   },
+   {
+    "l": "D",
+    "t": "The loop doesn't branch on stop_reason, so Task never executes.",
+    "correct": true,
+    "why": "stop_reason \"tool_use\" means run the requested tools and loop again. Treating any response with text as final is the anti-pattern that turns a real call into narration."
+   }
+  ],
+  "principle": "Loop while stop_reason is \"tool_use\"; stop on \"end_turn\". A response can contain both text and tool_use blocks — the text is not the answer when a tool call is pending."
+ },
+ {
+  "n": 83,
+  "d": 1,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Orchestration wiring",
+  "scenario": "Multi-Agent Research System",
+  "title": "You add a citation-checker AgentDefinition, but the coordinator keeps sending citation checks to the general research subagent, even though \"Task\" is in its allowedTools. What is the most likely fix?",
+  "correct": "B",
+  "opts": [
+   {
+    "l": "A",
+    "t": "Give citation-checker every tool the research subagent already has.",
+    "correct": false,
+    "why": "Tools don't drive which subagent the coordinator picks, and broadening them breaks role scoping."
+   },
+   {
+    "l": "B",
+    "t": "Write a description for citation-checker saying exactly when to use it.",
+    "correct": true,
+    "why": "The AgentDefinition description is what the coordinator reads when choosing a subagent — the same way tool descriptions drive tool selection. Vague or overlapping descriptions cause misrouting."
+   },
+   {
+    "l": "C",
+    "t": "Tell citation-checker in its own system prompt to handle citations.",
+    "correct": false,
+    "why": "The coordinator never sees a subagent's system prompt when it decides whom to call; that prompt only shapes the subagent once it's running."
+   },
+   {
+    "l": "D",
+    "t": "Remove Task from allowedTools and have the coordinator check citations.",
+    "correct": false,
+    "why": "Removes delegation entirely to fix a routing problem, and puts specialist work back in the coordinator's context."
+   }
+  ],
+  "principle": "An AgentDefinition has three parts that matter: a description (how the coordinator chooses it), a system prompt (how it behaves), and tools (what it can do). Misrouting is a description problem."
+ },
+ {
+  "n": 84,
+  "d": 1,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Orchestration wiring",
+  "scenario": "Multi-Agent Research System",
+  "title": "The coordinator tells the search subagent: \"1. Search for the query. 2. Open the top 3 results. 3. Summarize each in 100 words.\" When the top 3 results are low quality, the report misses the most relevant sources. What change best fits?",
+  "correct": "A",
+  "opts": [
+   {
+    "l": "A",
+    "t": "State the goal and quality criteria; let the subagent choose its steps.",
+    "correct": true,
+    "why": "Goal-oriented delegation lets the subagent adapt — dig past weak results, reformulate queries — while structured findings with sources keep the coordinator informed and in control."
+   },
+   {
+    "l": "B",
+    "t": "Extend the procedure so the subagent opens the top 10 results instead.",
+    "correct": false,
+    "why": "Still a fixed script. It costs more on easy queries and still fails when the good sources sit at result 14."
+   },
+   {
+    "l": "C",
+    "t": "Add a step to rank results by domain authority before opening any.",
+    "correct": false,
+    "why": "Another fixed step. It helps one failure mode and still leaves the subagent unable to adapt to what it finds."
+   },
+   {
+    "l": "D",
+    "t": "Have the coordinator approve each result before the subagent opens it.",
+    "correct": false,
+    "why": "Pulls every micro-decision back to the hub, adding round trips and coordinator context for no gain in quality."
+   }
+  ],
+  "principle": "Delegate the goal, not the procedure: state what a good result looks like and the scope boundary, let the subagent choose its steps, and require structured findings back so the coordinator keeps visibility."
+ },
+ {
+  "n": 85,
+  "d": 1,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Orchestration wiring",
+  "scenario": "Multi-Agent Research System",
+  "title": "Three search subagents return findings as prose. The synthesis subagent's reports can't cite sources or dates, and on every run it asks the coordinator for URLs, adding round trips. What's the best fix?",
+  "correct": "D",
+  "opts": [
+   {
+    "l": "A",
+    "t": "Give the synthesis subagent web search so it can look up the URLs.",
+    "correct": false,
+    "why": "Duplicates the searchers' work, breaks role scoping, and may cite different sources than the findings came from."
+   },
+   {
+    "l": "B",
+    "t": "Let the synthesis subagent inherit the coordinator's conversation.",
+    "correct": false,
+    "why": "Subagents don't inherit context — and the coordinator's history holds the same prose, so the metadata still wouldn't be there."
+   },
+   {
+    "l": "C",
+    "t": "Have each search subagent add a bibliography paragraph to its prose.",
+    "correct": false,
+    "why": "Loses the claim-to-source link: synthesis can't tell which claim came from which source or when it was published."
+   },
+   {
+    "l": "D",
+    "t": "Pass findings as structured data with URL, title and date per claim.",
+    "correct": true,
+    "why": "Complete context in the prompt — findings plus source metadata — means synthesis can attribute every claim without returning to the coordinator."
+   }
+  ],
+  "principle": "A subagent prompt must be complete: the findings, as structured data, with the source metadata (URL, document, date) needed to finish the task without asking the coordinator for more."
+ },
+ {
+  "n": 86,
+  "d": 1,
+  "focus": true,
+  "added": "9/13",
+  "obj": "Orchestration wiring",
+  "scenario": "Multi-Agent Research System",
+  "title": "Mid-task, the search subagent finds a 90-page PDF that needs the analysis subagent's document tools. How should that hand-off happen?",
+  "correct": "C",
+  "opts": [
+   {
+    "l": "A",
+    "t": "Give the search subagent the Task tool so it can spawn the analyzer.",
+    "correct": false,
+    "why": "Subagents don't spawn their own subagents — and a spawn the coordinator doesn't know about takes routing, error handling and aggregation away from the hub."
+   },
+   {
+    "l": "B",
+    "t": "Have both subagents watch a shared scratchpad file for new work.",
+    "correct": false,
+    "why": "Peer-to-peer coordination with no owner: no one tracks the work, handles a failure, or knows the result is ready."
+   },
+   {
+    "l": "C",
+    "t": "Return the PDF reference to the coordinator, which delegates analysis.",
+    "correct": true,
+    "why": "Hub-and-spoke: all communication goes through the coordinator, which keeps observability, consistent error handling and control over what runs next."
+   },
+   {
+    "l": "D",
+    "t": "Give the search subagent the document tools too, so it can finish.",
+    "correct": false,
+    "why": "Breaks role scoping; a searcher with document tools makes worse tool choices, and its context fills with a 90-page PDF."
+   }
+  ],
+  "principle": "Subagents report to the coordinator only — no peer-to-peer calls, no nested spawning. New work discovered mid-task goes back to the hub to delegate."
  }
 ];
 questions.push(...focusQuestions);
@@ -3141,6 +3437,47 @@ refBlocks.push(
 
 
 
+/* ===== GAP-FILL 9/13: orchestration wiring ===== */
+principles.push(
+{c:"--d1",added:"9/13",t:"★ No tool_use block, no tool call — narration is not execution",
+ body:"A model can only call tools that are in <b>its own</b> request. When one is missing it can't emit a <code>tool_use</code> block, so it often <i>describes</i> the call (\"I'll have the search agent look into this…\") and carries on as if it happened — sometimes inventing the results. Read the trace, not the prose: <b>no tool_use block</b> → tool access (the coordinator's <code>allowedTools</code> lacks <code>\"Task\"</code>, or the subagent's AgentDefinition <code>tools</code> lacks the tool). <b>tool_use emitted but never run</b> → your loop isn't branching on <code>stop_reason</code>. <b>Ran but ignored</b> → the <code>tool_result</code> never made it into the next request.",
+ test:"Is there a tool_use block in the trace? At which level — coordinator or subagent — is the narration happening?"},
+{c:"--d1",added:"9/13",t:"★ A delegation has three wires",
+ body:"Delegation works only when all three are connected: (1) the coordinator can call <code>Task</code> — it's in <code>allowedTools</code>; (2) an <b>AgentDefinition</b> exists for the subagent, with a <b>description</b> that tells the coordinator when to pick it, a <b>system prompt</b>, and <b>tools</b> scoped to its role; (3) the Task <b>prompt</b> carries everything the subagent needs — goal, quality criteria, prior findings as structured data with source metadata — because it inherits nothing. Subagents report back to the coordinator; they don't call each other or spawn their own subagents. Delegate the <b>goal</b>, not a click-by-click procedure.",
+ test:"Which wire is cut: Task access, the AgentDefinition (description / tools), or what the prompt carries?"}
+);
+
+traps.push(
+{added:"9/13",t:"★ Believing the narration",
+ good:"Look for a tool_use block in the trace before trusting any \"I searched…\" or \"I delegated…\" text.",
+ bad:"Taking \"I've handed this to the research agent\" at face value when Task was never available to call."},
+{added:"9/13",t:"★ Fixing missing tool access with prompt wording",
+ good:"Add \"Task\" to the coordinator's allowedTools, or the tool to the subagent's AgentDefinition.",
+ bad:"\"You MUST use the search subagent\" in the system prompt — no instruction lets a model call a tool it doesn't have."},
+{added:"9/13",t:"★ Giving the coordinator the subagent's tools",
+ good:"Each tool lives with the role that uses it; the coordinator gets Task.",
+ bad:"Adding web search to the coordinator because a subagent narrated its searches — breaks role scoping and leaves the subagent broken."},
+{added:"9/13",t:"★ Step-by-step procedures for subagents",
+ good:"Goal + quality criteria + scope boundary; the subagent chooses its steps and returns structured findings.",
+ bad:"\"Open the top 3 results and summarize each\" — the subagent can't adapt when the top 3 are weak."}
+);
+
+refBlocks.push(
+{added:"9/13",h:"★ Orchestration wiring & symptoms",rows:[
+ ["Coordinator can spawn","\"Task\" is in the coordinator's allowedTools."],
+ ["Subagent gets picked","An AgentDefinition exists, and its description says when to use it."],
+ ["Subagent can act","Its AgentDefinition tools include what its role needs — and only that."],
+ ["Subagent knows enough","The Task prompt carries goal, criteria, prior findings and source metadata. Nothing is inherited."],
+ ["Parallel work","Multiple Task calls in ONE coordinator response."],
+ ["Who talks to whom","Subagents report to the coordinator only — no peer calls, no nested spawning."],
+ ["Narrates, no tool_use","That agent's tool list is missing the tool."],
+ ["tool_use, never ran","The loop isn't branching on stop_reason."],
+ ["Ran, result ignored","tool_result wasn't appended to the next request."],
+ ["Wrong subagent chosen","Vague or overlapping AgentDefinition descriptions."]
+]});
+
+
+
 /* ===== VISUAL MAP ===== */
 const visuals = [
 
@@ -3480,6 +3817,103 @@ const visuals = [
  <text x="462" y="324" font-size="10.5" fill="#3d3833">• claim → source mappings (URL, doc, excerpt) + collection dates</text>
  <text x="462" y="342" font-size="10.5" fill="#3d3833">• conflicts annotated, not silently resolved</text>
  <text x="462" y="360" font-size="10.5" fill="#3d3833">• accumulated context, findings, authorization state — not prose</text>
+</svg>`},
+
+{added:"9/13",t:"Orchestration wiring — where a delegation breaks",
+ lead:"Spawning a subagent is just a tool call, so it fails the way tool calls fail. Follow one delegation end to end, and learn to read the trace instead of the prose: an agent that <b>narrates</b> a call with no <code>tool_use</code> block behind it is missing the tool, not misbehaving.",
+ svg:`<svg viewBox="0 0 880 520" xmlns="http://www.w3.org/2000/svg" font-family="ui-sans-serif,-apple-system,system-ui,sans-serif">
+ <defs><marker id="a14" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#6b6459"/></marker></defs>
+ <rect x="8" y="8" width="864" height="504" rx="12" fill="#fbf8f4" stroke="#e4ded4"/>
+ <text x="26" y="40" font-size="11.5" font-weight="700" fill="#1f1c19">One delegation, end to end</text>
+ <text x="200" y="40" font-size="10.5" fill="#6b6459">— every arrow is a tool call or a tool result</text>
+
+ <rect x="26" y="58" width="150" height="80" rx="8" fill="#f6e7e0" stroke="#e8c6bb"/>
+ <text x="101" y="80" font-size="11" font-weight="700" text-anchor="middle" fill="#c65f3d">1 · coordinator turn</text>
+ <text x="101" y="100" font-size="9.8" text-anchor="middle" fill="#3d3833">allowedTools includes</text>
+ <text x="101" y="117" font-size="9.8" text-anchor="middle" fill="#6b6459">"Task"</text>
+
+ <path d="M176 98 L196 98" stroke="#6b6459" stroke-width="1.4" marker-end="url(#a14)"/>
+
+ <rect x="198" y="58" width="150" height="80" rx="8" fill="#f6e7e0" stroke="#e8c6bb"/>
+ <text x="273" y="80" font-size="11" font-weight="700" text-anchor="middle" fill="#c65f3d">2 · tool_use: Task</text>
+ <text x="273" y="100" font-size="9.8" text-anchor="middle" fill="#3d3833">subagent_type + prompt</text>
+ <text x="273" y="117" font-size="9.8" text-anchor="middle" fill="#6b6459">stop_reason: "tool_use"</text>
+
+ <path d="M348 98 L368 98" stroke="#6b6459" stroke-width="1.4" marker-end="url(#a14)"/>
+
+ <rect x="370" y="58" width="150" height="80" rx="8" fill="#eef4f9" stroke="#c9dced"/>
+ <text x="445" y="80" font-size="11" font-weight="700" text-anchor="middle" fill="#3f7cac">3 · AgentDefinition</text>
+ <text x="445" y="100" font-size="9.8" text-anchor="middle" fill="#3d3833">description · system prompt</text>
+ <text x="445" y="117" font-size="9.8" text-anchor="middle" fill="#6b6459">tools scoped to the role</text>
+
+ <path d="M520 98 L540 98" stroke="#6b6459" stroke-width="1.4" marker-end="url(#a14)"/>
+
+ <rect x="542" y="58" width="150" height="80" rx="8" fill="#eef4f9" stroke="#c9dced"/>
+ <text x="617" y="80" font-size="11" font-weight="700" text-anchor="middle" fill="#3f7cac">4 · subagent loop</text>
+ <text x="617" y="100" font-size="9.8" text-anchor="middle" fill="#3d3833">context = the prompt only</text>
+ <text x="617" y="117" font-size="9.8" text-anchor="middle" fill="#6b6459">tool_use: web_search</text>
+
+ <path d="M692 98 L712 98" stroke="#6b6459" stroke-width="1.4" marker-end="url(#a14)"/>
+
+ <rect x="714" y="58" width="150" height="80" rx="8" fill="#e6f2ec" stroke="#bfe0ce"/>
+ <text x="789" y="80" font-size="11" font-weight="700" text-anchor="middle" fill="#2f7d5b">5 · tool_result</text>
+ <text x="789" y="100" font-size="9.8" text-anchor="middle" fill="#3d3833">structured findings</text>
+ <text x="789" y="117" font-size="9.8" text-anchor="middle" fill="#6b6459">+ sources → coordinator</text>
+
+ <text x="26" y="166" font-size="10.5" font-weight="700" fill="#b03a48">Where it breaks — and what you actually see</text>
+
+ <path d="M101 138 L101 152 M101 171 L101 176" stroke="#d9a3ab" stroke-width="1.2" stroke-dasharray="3 3"/>
+ <rect x="26" y="176" width="150" height="74" rx="8" fill="#fcf0f1" stroke="#efc9ce"/>
+ <text x="101" y="197" font-size="10.5" font-weight="700" text-anchor="middle" fill="#b03a48">✗ Task not allowed</text>
+ <text x="101" y="216" font-size="9.8" text-anchor="middle" fill="#3d3833">narrates "I'll delegate…"</text>
+ <text x="101" y="233" font-size="9.8" text-anchor="middle" fill="#3d3833">no tool_use in the trace</text>
+
+ <path d="M273 138 L273 152 M273 171 L273 176" stroke="#d9a3ab" stroke-width="1.2" stroke-dasharray="3 3"/>
+ <rect x="198" y="176" width="150" height="74" rx="8" fill="#fcf0f1" stroke="#efc9ce"/>
+ <text x="273" y="197" font-size="10.5" font-weight="700" text-anchor="middle" fill="#b03a48">✗ loop skips stop_reason</text>
+ <text x="273" y="216" font-size="9.8" text-anchor="middle" fill="#3d3833">the Task call is shown</text>
+ <text x="273" y="233" font-size="9.8" text-anchor="middle" fill="#3d3833">as the final answer</text>
+
+ <path d="M445 138 L445 152 M445 171 L445 176" stroke="#d9a3ab" stroke-width="1.2" stroke-dasharray="3 3"/>
+ <rect x="370" y="176" width="150" height="74" rx="8" fill="#fcf0f1" stroke="#efc9ce"/>
+ <text x="445" y="197" font-size="10.5" font-weight="700" text-anchor="middle" fill="#b03a48">✗ vague description</text>
+ <text x="445" y="216" font-size="9.8" text-anchor="middle" fill="#3d3833">coordinator picks</text>
+ <text x="445" y="233" font-size="9.8" text-anchor="middle" fill="#3d3833">the wrong subagent</text>
+
+ <path d="M617 138 L617 152 M617 171 L617 176" stroke="#d9a3ab" stroke-width="1.2" stroke-dasharray="3 3"/>
+ <rect x="542" y="176" width="150" height="74" rx="8" fill="#fcf0f1" stroke="#efc9ce"/>
+ <text x="617" y="197" font-size="10.5" font-weight="700" text-anchor="middle" fill="#b03a48">✗ tool not in its list</text>
+ <text x="617" y="216" font-size="9.8" text-anchor="middle" fill="#3d3833">subagent narrates a search</text>
+ <text x="617" y="233" font-size="9.8" text-anchor="middle" fill="#3d3833">and invents the results</text>
+
+ <path d="M789 138 L789 152 M789 171 L789 176" stroke="#d9a3ab" stroke-width="1.2" stroke-dasharray="3 3"/>
+ <rect x="714" y="176" width="150" height="74" rx="8" fill="#fcf0f1" stroke="#efc9ce"/>
+ <text x="789" y="197" font-size="10.5" font-weight="700" text-anchor="middle" fill="#b03a48">✗ result not appended</text>
+ <text x="789" y="216" font-size="9.8" text-anchor="middle" fill="#3d3833">coordinator never sees</text>
+ <text x="789" y="233" font-size="9.8" text-anchor="middle" fill="#3d3833">what came back</text>
+
+ <rect x="26" y="270" width="404" height="226" rx="8" fill="#fff" stroke="#e4ded4"/>
+ <text x="42" y="294" font-size="11.5" font-weight="700" fill="#1f1c19">Read the trace, not the prose</text>
+ <text x="42" y="316" font-size="10.5" font-weight="700" fill="#3d3833">Is there a tool_use block for the call?</text>
+ <text x="42" y="338" font-size="10.5" fill="#3d3833">• no → that agent's tool list lacks it (Task, web_search)</text>
+ <text x="42" y="358" font-size="10.5" fill="#3d3833">• yes, never ran → loop isn't branching on stop_reason</text>
+ <text x="42" y="378" font-size="10.5" fill="#3d3833">• ran, result ignored → tool_result never appended</text>
+ <text x="42" y="398" font-size="10.5" fill="#3d3833">• ran, wrong specialist → AgentDefinition description</text>
+ <text x="42" y="430" font-size="10.5" font-weight="700" fill="#b03a48">Missing tool access is never fixed by prompt wording.</text>
+ <text x="42" y="450" font-size="10.5" fill="#3d3833">"You MUST use the search agent" can't create a tool.</text>
+ <text x="42" y="470" font-size="10.5" fill="#3d3833">Fix the level that narrates: coordinator → Task;</text>
+ <text x="42" y="488" font-size="10.5" fill="#3d3833">subagent → the tool in its own AgentDefinition.</text>
+
+ <rect x="446" y="270" width="406" height="226" rx="8" fill="#e6f2ec" stroke="#bfe0ce"/>
+ <text x="462" y="294" font-size="11.5" font-weight="700" fill="#2f7d5b">What the Task prompt must carry</text>
+ <text x="462" y="318" font-size="10.5" fill="#3d3833">✓ the goal, quality criteria and scope boundary</text>
+ <text x="462" y="338" font-size="10.5" fill="#3d3833">✓ prior findings as structured data + source URL / date</text>
+ <text x="462" y="358" font-size="10.5" fill="#b03a48">✗ a click-by-click procedure ("open the top 3 results")</text>
+ <text x="462" y="378" font-size="10.5" fill="#b03a48">✗ assuming it can see the coordinator's history</text>
+ <text x="462" y="414" font-size="10.5" font-weight="700" fill="#1f1c19">Topology rules</text>
+ <text x="462" y="436" font-size="10.5" fill="#3d3833">• subagents report to the coordinator only</text>
+ <text x="462" y="456" font-size="10.5" fill="#3d3833">• no peer-to-peer calls, no nested spawning</text>
+ <text x="462" y="476" font-size="10.5" fill="#3d3833">• parallel = multiple Task calls in ONE response</text>
 </svg>`},
 
 {t:"Hook lifecycle — where enforcement actually happens",
